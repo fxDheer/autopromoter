@@ -389,36 +389,36 @@ export const validateApiKeys = (apiConfig) => {
 export const getPlatformRequirements = () => {
   return {
     facebook: {
-      required: ['Access Token', 'Page ID'],
-      optional: ['App ID', 'App Secret'],
+      required: ['accessToken', 'pageId'],
+      optional: ['appId', 'appSecret'],
       permissions: ['pages_manage_posts', 'pages_read_engagement'],
       setupUrl: 'https://developers.facebook.com/docs/pages-api/getting-started',
       description: 'Facebook Page posting requires a valid access token and page ID'
     },
     instagram: {
-      required: ['Access Token', 'Business Account ID'],
-      optional: ['App ID', 'App Secret'],
+      required: ['accessToken', 'businessAccountId'],
+      optional: ['appId', 'appSecret'],
       permissions: ['instagram_basic', 'instagram_content_publish'],
       setupUrl: 'https://developers.facebook.com/docs/instagram-basic-display-api/getting-started',
       description: 'Instagram Business posting requires business account conversion and API access'
     },
     linkedin: {
-      required: ['Access Token', 'Organization ID'],
-      optional: ['Client ID', 'Client Secret'],
+      required: ['accessToken', 'organizationId'],
+      optional: ['clientId', 'clientSecret'],
       permissions: ['w_member_social', 'r_organization_social'],
       setupUrl: 'https://developer.linkedin.com/docs/share-on-linkedin',
       description: 'LinkedIn Company posting requires organization access and API permissions'
     },
     tiktok: {
-      required: ['Access Token', 'Business ID'],
-      optional: ['App ID', 'App Secret'],
+      required: ['accessToken', 'businessId'],
+      optional: ['appId', 'appSecret'],
       permissions: ['user.info.basic', 'video.publish'],
       setupUrl: 'https://developers.tiktok.com/doc/login-kit-web',
       description: 'TikTok Business posting requires business account and API approval'
     },
     youtube: {
-      required: ['API Key', 'Channel ID'],
-      optional: ['Client ID', 'Client Secret'],
+      required: ['apiKey', 'channelId'],
+      optional: ['clientId', 'clientSecret'],
       permissions: ['https://www.googleapis.com/auth/youtube.upload'],
       setupUrl: 'https://developers.google.com/youtube/v3/getting-started',
       description: 'YouTube posting requires API key and channel access'

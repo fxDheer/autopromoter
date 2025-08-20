@@ -46,6 +46,24 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
 
   const requirements = getPlatformRequirements();
 
+  // Convert field names to display names
+  const getDisplayName = (field) => {
+    const displayNames = {
+      accessToken: 'Access Token',
+      pageId: 'Page ID',
+      appId: 'App ID',
+      appSecret: 'App Secret',
+      businessAccountId: 'Business Account ID',
+      organizationId: 'Organization ID',
+      clientId: 'Client ID',
+      clientSecret: 'Client Secret',
+      businessId: 'Business ID',
+      apiKey: 'API Key',
+      channelId: 'Channel ID'
+    };
+    return displayNames[field] || field;
+  };
+
   const handleConfigChange = (platform, field, value) => {
     setConfig(prev => ({
       ...prev,
@@ -65,6 +83,16 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         }
       }));
     }
+  };
+
+  const handleTogglePlatform = (platform) => {
+    setConfig(prev => ({
+      ...prev,
+      [platform]: {
+        ...prev[platform],
+        enabled: !prev[platform].enabled
+      }
+    }));
   };
 
   const handleSave = () => {
@@ -93,15 +121,8 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
       return;
     }
 
-    // Filter out disabled platforms
-    const enabledConfig = {};
-    Object.keys(config).forEach(platform => {
-      if (config[platform].enabled) {
-        enabledConfig[platform] = config[platform];
-      }
-    });
-
-    onSave(enabledConfig);
+    // Save all platforms (enabled and disabled) to preserve state
+    onSave(config);
     onClose();
   };
 
@@ -193,7 +214,7 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                     <input
                       type="checkbox"
                       checked={config[platform].enabled}
-                      onChange={(e) => handleConfigChange(platform, 'enabled', e.target.checked)}
+                      onChange={() => handleTogglePlatform(platform)}
                       className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
                     />
                     <span className="font-medium text-gray-700">Enable {platform} auto-posting</span>
@@ -208,8 +229,8 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {requirements[platform].required.map((field) => (
                           <div key={field}>
-                            <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                              {field.replace(/([A-Z])/g, ' $1').trim()}
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {getDisplayName(field)}
                             </label>
                             <input
                               type={field.includes('Secret') || field.includes('Token') ? 'password' : 'text'}
@@ -218,7 +239,7 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                               className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                                 errors[platform] && errors[platform][field] ? 'border-red-500' : 'border-gray-300'
                               }`}
-                              placeholder={`Enter your ${field}`}
+                              placeholder={`Enter your ${getDisplayName(field)}`}
                             />
                             {errors[platform] && errors[platform][field] && (
                               <p className="text-red-500 text-sm mt-1">{errors[platform][field]}</p>
@@ -235,15 +256,15 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {requirements[platform].optional.map((field) => (
                             <div key={field}>
-                              <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                                {field.replace(/([A-Z])/g, ' $1').trim()}
-                              </label>
+                                                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {getDisplayName(field)}
+                            </label>
                               <input
                                 type={field.includes('Secret') ? 'password' : 'text'}
                                 value={config[platform][field]}
                                 onChange={(e) => handleConfigChange(platform, field, e.target.value)}
                                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                placeholder={`Enter your ${field} (optional)`}
+                                placeholder={`Enter your ${getDisplayName(field)} (optional)`}
                               />
                             </div>
                           ))}
