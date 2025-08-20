@@ -47,12 +47,15 @@ export const loadEnvironmentVariables = () => {
   // Check if there are manually configured APIs in localStorage
   const savedConfig = localStorage.getItem('autoPromoterApiConfig');
   let hasManualApiKeys = false;
+  let manualConfig = null;
+  
   if (savedConfig) {
     try {
-      const parsedConfig = JSON.parse(savedConfig);
-      hasManualApiKeys = Object.values(parsedConfig).some(platform => platform?.enabled);
+      manualConfig = JSON.parse(savedConfig);
+      hasManualApiKeys = Object.values(manualConfig).some(platform => platform?.enabled);
+      console.log('✅ Found saved API config in localStorage:', manualConfig);
     } catch (error) {
-      console.error('Error parsing saved config:', error);
+      console.error('❌ Error parsing saved config:', error);
     }
   }
 
@@ -65,18 +68,13 @@ export const loadEnvironmentVariables = () => {
   console.log('Instagram API loaded:', config.instagram.appId ? 'Yes' : 'No');
   console.log('YouTube API loaded:', config.youtube.apiKey ? 'Yes' : 'No');
 
-  // If no environment variables are loaded, try to get from localStorage
-  if (!hasEnvApiKeys && hasManualApiKeys) {
-    console.log('🔄 No environment variables found, but found manual config in localStorage');
-    try {
-      const parsedConfig = JSON.parse(savedConfig);
-      console.log('✅ Using manually configured APIs from localStorage');
-      return parsedConfig;
-    } catch (error) {
-      console.error('❌ Error parsing saved config:', error);
-    }
+  // If we have manual config with enabled platforms, return it directly
+  if (hasManualApiKeys && manualConfig) {
+    console.log('🔄 Using manually configured APIs from localStorage');
+    return manualConfig;
   }
 
+  // Otherwise return environment config
   return config;
 };
 

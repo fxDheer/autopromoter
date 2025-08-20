@@ -66,7 +66,27 @@ const GeneratePosts = () => {
   useEffect(() => {
     const loadApiConfig = () => {
       try {
-        // Load environment variables
+        // First, check if we have saved API config in localStorage
+        const savedConfig = localStorage.getItem('autoPromoterApiConfig');
+        if (savedConfig) {
+          try {
+            const parsedConfig = JSON.parse(savedConfig);
+            console.log('🔄 Found saved API config in localStorage:', parsedConfig);
+            
+            // Check if any platforms are enabled in the saved config
+            const enabledCount = Object.values(parsedConfig).filter(platform => platform?.enabled).length;
+            if (enabledCount > 0) {
+              console.log(`✅ Found ${enabledCount} enabled platform(s) in saved config`);
+              setApiConfig(parsedConfig);
+              return; // Use saved config, don't override
+            }
+          } catch (error) {
+            console.error('Error parsing saved config:', error);
+          }
+        }
+
+        // If no saved config or no enabled platforms, try environment variables
+        console.log('🔄 No saved config found, checking environment variables...');
         const envConfig = loadEnvironmentVariables();
         
         // Convert to API config format
@@ -78,7 +98,7 @@ const GeneratePosts = () => {
         // Save to localStorage
         localStorage.setItem('autoPromoterApiConfig', JSON.stringify(autoConfig));
         
-        console.log('✅ API configuration automatically loaded from environment variables!');
+        console.log('✅ API configuration loaded from environment variables!');
         console.log('Loaded config:', autoConfig);
         
         // Show success message if APIs are loaded
@@ -94,24 +114,12 @@ const GeneratePosts = () => {
           console.log('⚠️ No platforms enabled automatically. Please configure APIs manually.');
         }
       } catch (error) {
-        console.error('Error loading environment variables:', error);
+        console.error('Error loading API configuration:', error);
       }
     };
 
-    // Load API config from environment variables
+    // Load API config
     loadApiConfig();
-    
-    // Also try to load from localStorage as fallback
-    const savedConfig = localStorage.getItem('autoPromoterApiConfig');
-    if (savedConfig) {
-      try {
-        const parsedConfig = JSON.parse(savedConfig);
-        console.log('🔄 Loading saved API config from localStorage:', parsedConfig);
-        setApiConfig(parsedConfig);
-      } catch (error) {
-        console.error('Error parsing saved config:', error);
-      }
-    }
   }, []);
 
   const handleGenerateMore = async () => {
