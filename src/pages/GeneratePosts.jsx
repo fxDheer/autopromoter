@@ -57,9 +57,32 @@ const GeneratePosts = () => {
   };
 
   const handleApiConfigSave = (config) => {
-    setApiConfig(config);
-    localStorage.setItem('autoPromoterApiConfig', JSON.stringify(config));
-    alert("✅ API configuration saved successfully!");
+    console.log('💾 Saving API configuration:', config);
+    
+    // Ensure all platforms have the enabled property
+    const normalizedConfig = {};
+    Object.keys(config).forEach(platform => {
+      normalizedConfig[platform] = {
+        ...config[platform],
+        enabled: !!config[platform]?.enabled
+      };
+    });
+    
+    console.log('✅ Normalized config:', normalizedConfig);
+    
+    setApiConfig(normalizedConfig);
+    localStorage.setItem('autoPromoterApiConfig', JSON.stringify(normalizedConfig));
+    
+    // Count enabled platforms
+    const enabledCount = Object.values(normalizedConfig).filter(platform => platform.enabled).length;
+    console.log(`🎯 ${enabledCount} platform(s) enabled`);
+    
+    alert(`✅ API configuration saved successfully!\n\n🚀 ${enabledCount} platform(s) configured and ready for auto-posting!`);
+    
+    // Force a re-render to update the status display
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   };
 
   // Auto-load environment variables on component mount
@@ -592,8 +615,20 @@ const GeneratePosts = () => {
                   </button>
                   {/* API Configuration Status */}
                   <div className="mb-4 p-3 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20">
-                    <div className="text-sm text-emerald-200 mb-2">
-                      🔑 API Configuration Status:
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="text-sm text-emerald-200">
+                        🔑 API Configuration Status:
+                      </div>
+                      <button
+                        onClick={() => {
+                          console.log('🔍 Current API Config:', apiConfig);
+                          console.log('🔍 localStorage:', localStorage.getItem('autoPromoterApiConfig'));
+                          alert(`🔍 Debug Info:\n\nCurrent Config: ${JSON.stringify(apiConfig, null, 2)}\n\nlocalStorage: ${localStorage.getItem('autoPromoterApiConfig')}`);
+                        }}
+                        className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                      >
+                        🔍 Debug
+                      </button>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
                       <div className={`px-2 py-1 rounded ${apiConfig.facebook?.enabled ? 'bg-green-600' : 'bg-gray-600'} text-white text-center`}>

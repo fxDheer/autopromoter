@@ -327,6 +327,16 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
               >
                 Save Configuration
               </button>
+              <button
+                onClick={() => {
+                  handleSave();
+                  // Force reload of the main page to update API status
+                  window.location.reload();
+                }}
+                className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold"
+              >
+                🚀 Test & Save All APIs
+              </button>
             </div>
           </div>
         </div>
