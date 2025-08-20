@@ -21,22 +21,17 @@ app.use(helmet()); // Security headers
 app.use(morgan('combined')); // Logging
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+    ? ['https://autopromoter-autopromoter.up.railway.app'] 
     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files (for production)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../dist')));
-  
-  // Serve index.html for all routes (SPA)
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
-  });
-}
+// API Routes (must come before static files)
+app.use('/api/social-media', socialMediaRoutes);
+app.use('/api/content', contentRoutes);
+app.use('/api/business', businessRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -64,19 +59,20 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
-app.use('/api/social-media', socialMediaRoutes);
-app.use('/api/content', contentRoutes);
-app.use('/api/business', businessRoutes);
-
-// Catch-all route for SPA (Single Page Application)
-// app.get('*', (req, res) => {
-//   if (process.env.NODE_ENV === 'production') {
-//     res.sendFile(path.join(__dirname, '../dist/index.html'));
-//   } else {
-//     res.json({ message: 'Auto-Promoter Backend API' });
-//   }
-// });
+// Static files (for production) - serve frontend
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the dist folder
+  app.use(express.static(path.join(__dirname, '../dist')));
+  
+  // Handle SPA routing - serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

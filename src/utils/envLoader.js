@@ -1,5 +1,6 @@
 // Environment Variables Loader
 // This utility automatically loads API keys from environment variables
+// Updated to handle Railway deployment
 
 export const loadEnvironmentVariables = () => {
   const config = {
@@ -49,6 +50,21 @@ export const loadEnvironmentVariables = () => {
   console.log('Instagram API loaded:', config.instagram.appId ? 'Yes' : 'No');
   console.log('YouTube API loaded:', config.youtube.apiKey ? 'Yes' : 'No');
 
+  // If no environment variables are loaded, try to get from localStorage
+  if (!hasApiKeys) {
+    console.log('🔄 No environment variables found, checking localStorage...');
+    const savedConfig = localStorage.getItem('autoPromoterApiConfig');
+    if (savedConfig) {
+      try {
+        const parsedConfig = JSON.parse(savedConfig);
+        console.log('✅ Found saved API config in localStorage');
+        return parsedConfig;
+      } catch (error) {
+        console.error('❌ Error parsing saved config:', error);
+      }
+    }
+  }
+
   return config;
 };
 
@@ -56,39 +72,39 @@ export const loadEnvironmentVariables = () => {
 export const convertToApiConfig = (envConfig) => {
   return {
     facebook: {
-      enabled: !!(envConfig.facebook.appId && envConfig.facebook.accessToken && envConfig.facebook.pageId),
-      accessToken: envConfig.facebook.accessToken,
-      pageId: envConfig.facebook.pageId,
-      appId: envConfig.facebook.appId,
-      appSecret: envConfig.facebook.appSecret
+      enabled: !!(envConfig.facebook?.appId && envConfig.facebook?.accessToken && envConfig.facebook?.pageId),
+      accessToken: envConfig.facebook?.accessToken || '',
+      pageId: envConfig.facebook?.pageId || '',
+      appId: envConfig.facebook?.appId || '',
+      appSecret: envConfig.facebook?.appSecret || ''
     },
     instagram: {
-      enabled: !!(envConfig.instagram.appId && envConfig.instagram.accessToken && envConfig.instagram.businessAccountId),
-      accessToken: envConfig.instagram.accessToken,
-      businessAccountId: envConfig.instagram.businessAccountId,
-      appId: envConfig.instagram.appId,
-      appSecret: envConfig.instagram.appSecret
+      enabled: !!(envConfig.instagram?.appId && envConfig.instagram?.accessToken && envConfig.instagram?.businessAccountId),
+      accessToken: envConfig.instagram?.accessToken || '',
+      businessAccountId: envConfig.instagram?.businessAccountId || '',
+      appId: envConfig.instagram?.appId || '',
+      appSecret: envConfig.instagram?.appSecret || ''
     },
     linkedin: {
-      enabled: !!(envConfig.linkedin.clientId && envConfig.linkedin.accessToken && envConfig.linkedin.organizationId),
-      accessToken: envConfig.linkedin.accessToken,
-      organizationId: envConfig.linkedin.organizationId,
-      clientId: envConfig.linkedin.clientId,
-      clientSecret: envConfig.linkedin.clientSecret
+      enabled: !!(envConfig.linkedin?.clientId && envConfig.linkedin?.accessToken && envConfig.linkedin?.organizationId),
+      accessToken: envConfig.linkedin?.accessToken || '',
+      organizationId: envConfig.linkedin?.organizationId || '',
+      clientId: envConfig.linkedin?.clientId || '',
+      clientSecret: envConfig.linkedin?.clientSecret || ''
     },
     tiktok: {
-      enabled: !!(envConfig.tiktok.appId && envConfig.tiktok.accessToken && envConfig.tiktok.businessId),
-      accessToken: envConfig.tiktok.accessToken,
-      businessId: envConfig.tiktok.businessId,
-      appId: envConfig.tiktok.appId,
-      appSecret: envConfig.tiktok.appSecret
+      enabled: !!(envConfig.tiktok?.appId && envConfig.tiktok?.accessToken && envConfig.tiktok?.businessId),
+      accessToken: envConfig.tiktok?.accessToken || '',
+      businessId: envConfig.tiktok?.businessId || '',
+      appId: envConfig.tiktok?.appId || '',
+      appSecret: envConfig.tiktok?.appSecret || ''
     },
     youtube: {
-      enabled: !!(envConfig.youtube.apiKey && envConfig.youtube.channelId),
-      apiKey: envConfig.youtube.apiKey,
-      channelId: envConfig.youtube.channelId,
-      clientId: envConfig.youtube.clientId,
-      clientSecret: envConfig.youtube.clientSecret
+      enabled: !!(envConfig.youtube?.apiKey && envConfig.youtube?.channelId),
+      apiKey: envConfig.youtube?.apiKey || '',
+      channelId: envConfig.youtube?.channelId || '',
+      clientId: envConfig.youtube?.clientId || '',
+      clientSecret: envConfig.youtube?.clientSecret || ''
     }
   };
 };

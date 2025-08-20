@@ -90,6 +90,8 @@ const GeneratePosts = () => {
               .map(([platform, _]) => `• ${platform.charAt(0).toUpperCase() + platform.slice(1)}`)
               .join('\n')}\n\nYour Auto-Promoter is ready to use! 🚀`);
           }, 1000);
+        } else {
+          console.log('⚠️ No platforms enabled automatically. Please configure APIs manually.');
         }
       } catch (error) {
         console.error('Error loading environment variables:', error);
@@ -104,6 +106,7 @@ const GeneratePosts = () => {
     if (savedConfig) {
       try {
         const parsedConfig = JSON.parse(savedConfig);
+        console.log('🔄 Loading saved API config from localStorage:', parsedConfig);
         setApiConfig(parsedConfig);
       } catch (error) {
         console.error('Error parsing saved config:', error);
