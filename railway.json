@@ -4,6 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
+    "workingDirectory": "./backend",
     "startCommand": "npm start",
     "healthcheckPath": "/",
     "healthcheckTimeout": 300,
