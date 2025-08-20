@@ -31,6 +31,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files (for production)
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
+  
+  // Serve index.html for all routes (SPA)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
 }
 
 // Health check endpoint
@@ -65,13 +70,13 @@ app.use('/api/content', contentRoutes);
 app.use('/api/business', businessRoutes);
 
 // Catch-all route for SPA (Single Page Application)
-app.get('*', (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
-  } else {
-    res.json({ message: 'Auto-Promoter Backend API' });
-  }
-});
+// app.get('*', (req, res) => {
+//   if (process.env.NODE_ENV === 'production') {
+//     res.sendFile(path.join(__dirname, '../dist/index.html'));
+//   } else {
+//     res.json({ message: 'Auto-Promoter Backend API' });
+//   }
+// });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
