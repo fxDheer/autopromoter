@@ -39,29 +39,41 @@ export const loadEnvironmentVariables = () => {
     }
   };
 
-  // Check if any API keys are loaded
-  const hasApiKeys = Object.values(config).some(platform => 
+  // Check if any API keys are loaded from environment variables
+  const hasEnvApiKeys = Object.values(config).some(platform => 
     Object.values(platform).some(value => value && value !== '')
   );
 
-  console.log('Environment variables loaded:', hasApiKeys ? 'Yes' : 'No');
+  // Check if there are manually configured APIs in localStorage
+  const savedConfig = localStorage.getItem('autoPromoterApiConfig');
+  let hasManualApiKeys = false;
+  if (savedConfig) {
+    try {
+      const parsedConfig = JSON.parse(savedConfig);
+      hasManualApiKeys = Object.values(parsedConfig).some(platform => platform?.enabled);
+    } catch (error) {
+      console.error('Error parsing saved config:', error);
+    }
+  }
+
+  const hasApiKeys = hasEnvApiKeys || hasManualApiKeys;
+
+  console.log('Environment variables loaded:', hasEnvApiKeys ? 'Yes' : 'No');
+  console.log('Manual API config found:', hasManualApiKeys ? 'Yes' : 'No');
   console.log('OpenAI API Key loaded:', config.openai.apiKey ? 'Yes' : 'No');
   console.log('Facebook API loaded:', config.facebook.appId ? 'Yes' : 'No');
   console.log('Instagram API loaded:', config.instagram.appId ? 'Yes' : 'No');
   console.log('YouTube API loaded:', config.youtube.apiKey ? 'Yes' : 'No');
 
   // If no environment variables are loaded, try to get from localStorage
-  if (!hasApiKeys) {
-    console.log('🔄 No environment variables found, checking localStorage...');
-    const savedConfig = localStorage.getItem('autoPromoterApiConfig');
-    if (savedConfig) {
-      try {
-        const parsedConfig = JSON.parse(savedConfig);
-        console.log('✅ Found saved API config in localStorage');
-        return parsedConfig;
-      } catch (error) {
-        console.error('❌ Error parsing saved config:', error);
-      }
+  if (!hasEnvApiKeys && hasManualApiKeys) {
+    console.log('🔄 No environment variables found, but found manual config in localStorage');
+    try {
+      const parsedConfig = JSON.parse(savedConfig);
+      console.log('✅ Using manually configured APIs from localStorage');
+      return parsedConfig;
+    } catch (error) {
+      console.error('❌ Error parsing saved config:', error);
     }
   }
 
@@ -72,28 +84,28 @@ export const loadEnvironmentVariables = () => {
 export const convertToApiConfig = (envConfig) => {
   return {
     facebook: {
-      enabled: !!(envConfig.facebook?.appId && envConfig.facebook?.accessToken && envConfig.facebook?.pageId),
+      enabled: !!(envConfig.facebook?.accessToken && envConfig.facebook?.pageId),
       accessToken: envConfig.facebook?.accessToken || '',
       pageId: envConfig.facebook?.pageId || '',
       appId: envConfig.facebook?.appId || '',
       appSecret: envConfig.facebook?.appSecret || ''
     },
     instagram: {
-      enabled: !!(envConfig.instagram?.appId && envConfig.instagram?.accessToken && envConfig.instagram?.businessAccountId),
+      enabled: !!(envConfig.instagram?.accessToken && envConfig.instagram?.businessAccountId),
       accessToken: envConfig.instagram?.accessToken || '',
       businessAccountId: envConfig.instagram?.businessAccountId || '',
       appId: envConfig.instagram?.appId || '',
       appSecret: envConfig.instagram?.appSecret || ''
     },
     linkedin: {
-      enabled: !!(envConfig.linkedin?.clientId && envConfig.linkedin?.accessToken && envConfig.linkedin?.organizationId),
+      enabled: !!(envConfig.linkedin?.accessToken && envConfig.linkedin?.organizationId),
       accessToken: envConfig.linkedin?.accessToken || '',
       organizationId: envConfig.linkedin?.organizationId || '',
       clientId: envConfig.linkedin?.clientId || '',
       clientSecret: envConfig.linkedin?.clientSecret || ''
     },
     tiktok: {
-      enabled: !!(envConfig.tiktok?.appId && envConfig.tiktok?.accessToken && envConfig.tiktok?.businessId),
+      enabled: !!(envConfig.tiktok?.accessToken && envConfig.tiktok?.businessId),
       accessToken: envConfig.tiktok?.accessToken || '',
       businessId: envConfig.tiktok?.businessId || '',
       appId: envConfig.tiktok?.appId || '',
