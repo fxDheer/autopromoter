@@ -43,6 +43,22 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Root health check for Railway
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Auto-Promoter Backend Server Running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      socialMedia: '/api/social-media',
+      content: '/api/content',
+      business: '/api/business'
+    }
+  });
+});
+
 // API Routes
 app.use('/api/social-media', socialMediaRoutes);
 app.use('/api/content', contentRoutes);
