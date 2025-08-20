@@ -43,23 +43,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root health check for Railway
-app.get('/', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'Auto-Promoter Backend Server Running',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      socialMedia: '/api/social-media',
-      content: '/api/content',
-      business: '/api/business'
-    }
-  });
-});
-
-// Static files (for production) - serve frontend
+// Static files (for production) - serve frontend FIRST
 if (process.env.NODE_ENV === 'production') {
   // Serve static files from the dist folder
   app.use(express.static(path.join(__dirname, '../dist')));
@@ -71,6 +55,24 @@ if (process.env.NODE_ENV === 'production') {
       return res.status(404).json({ error: 'API endpoint not found' });
     }
     res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+}
+
+// Root health check for Railway (only if not in production)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/', (req, res) => {
+    res.json({ 
+      status: 'OK', 
+      message: 'Auto-Promoter Backend Server Running',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      endpoints: {
+        health: '/api/health',
+        socialMedia: '/api/social-media',
+        content: '/api/content',
+        business: '/api/business'
+      }
+    });
   });
 }
 
