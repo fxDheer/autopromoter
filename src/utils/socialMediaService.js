@@ -1,7 +1,10 @@
 // Social Media Service - Updated to use Backend API
 // This service now communicates with our backend server for real social media posting
 
-const BACKEND_URL = 'http://localhost:3001/api';
+// Backend API URL - use Railway URL in production
+const BACKEND_URL = import.meta.env.PROD 
+  ? 'https://autopromoter-autopromoter.up.railway.app/api'
+  : 'http://localhost:3001/api';
 
 // Helper function to make API calls to backend
 const callBackendAPI = async (endpoint, data) => {
