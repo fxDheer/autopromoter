@@ -149,14 +149,28 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   const handleSave = () => {
     const newErrors = {};
     
-    // Validate enabled platforms
-    Object.keys(config).forEach(platform => {
-      if (config[platform].enabled) {
+    // Auto-enable platforms that have all required fields filled FIRST
+    const finalConfig = { ...config };
+    Object.keys(finalConfig).forEach(platform => {
+      const required = requirements[platform].required;
+      const hasRequiredFields = required.every(reqField => 
+        finalConfig[platform][reqField] && finalConfig[platform][reqField].trim() !== ''
+      );
+      
+      if (hasRequiredFields) {
+        finalConfig[platform].enabled = true;
+        console.log(`🚀 Auto-enabling ${platform} - all required fields filled`);
+      }
+    });
+
+    // Now validate enabled platforms
+    Object.keys(finalConfig).forEach(platform => {
+      if (finalConfig[platform].enabled) {
         const platformErrors = {};
         const required = requirements[platform].required;
         
         required.forEach(field => {
-          if (!config[platform][field] || config[platform][field].trim() === '') {
+          if (!finalConfig[platform][field] || finalConfig[platform][field].trim() === '') {
             platformErrors[field] = `${getDisplayName(field)} is required`;
           }
         });
@@ -172,20 +186,9 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
       return;
     }
 
-    // Auto-enable platforms that have all required fields filled
-    const finalConfig = { ...config };
-    Object.keys(finalConfig).forEach(platform => {
-      const required = requirements[platform].required;
-      const hasRequiredFields = required.every(reqField => 
-        finalConfig[platform][reqField] && finalConfig[platform][reqField].trim() !== ''
-      );
-      
-      if (hasRequiredFields) {
-        finalConfig[platform].enabled = true;
-      }
-    });
-
     console.log('💾 Final config to save:', finalConfig);
+    console.log('🔍 Enabled platforms:', Object.keys(finalConfig).filter(p => finalConfig[p].enabled));
+    console.log('🔍 Facebook config:', finalConfig.facebook);
     
     // Save all platforms (enabled and disabled) to preserve state
     onSave(finalConfig);

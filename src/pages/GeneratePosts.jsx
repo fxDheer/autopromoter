@@ -58,20 +58,26 @@ const GeneratePosts = () => {
 
   const handleApiConfigSave = (config) => {
     console.log('💾 Saving API configuration:', config);
+    console.log('🔍 Config before normalization:', JSON.stringify(config, null, 2));
     
     // Ensure all platforms have the enabled property
     const normalizedConfig = {};
     Object.keys(config).forEach(platform => {
       normalizedConfig[platform] = {
         ...config[platform],
-        enabled: !!config[platform]?.enabled
+        enabled: Boolean(config[platform]?.enabled) // Use Boolean() instead of !!
       };
     });
     
     console.log('✅ Normalized config:', normalizedConfig);
+    console.log('🔍 Enabled platforms after normalization:', Object.keys(normalizedConfig).filter(p => normalizedConfig[p].enabled));
     
     setApiConfig(normalizedConfig);
     localStorage.setItem('autoPromoterApiConfig', JSON.stringify(normalizedConfig));
+    
+    // Verify what was actually saved
+    const savedConfig = localStorage.getItem('autoPromoterApiConfig');
+    console.log('🔍 What was actually saved to localStorage:', savedConfig);
     
     // Count enabled platforms
     const enabledCount = Object.values(normalizedConfig).filter(platform => platform.enabled).length;
