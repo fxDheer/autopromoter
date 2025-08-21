@@ -21,6 +21,12 @@ const GeneratePosts = () => {
   const [showAIDashboard, setShowAIDashboard] = useState(false);
   const [apiConfig, setApiConfig] = useState({});
   const [autoPostResults, setAutoPostResults] = useState([]);
+  const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
+
+  // Force re-render when apiConfig changes
+  useEffect(() => {
+    setForceUpdate(prev => prev + 1);
+  }, [apiConfig]);
 
   const handleSchedulePosts = () => {
     alert("📅 Scheduling Feature Coming Soon!\n\nThis will integrate with:\n• Buffer\n• Hootsuite\n• Facebook Business\n• Instagram Business\n• LinkedIn\n• TikTok Business\n• YouTube Shorts\n\nYour posts will be automatically scheduled and published!");
@@ -656,7 +662,26 @@ const GeneratePosts = () => {
                         onClick={() => {
                           console.log('🔍 Current API Config:', apiConfig);
                           console.log('🔍 localStorage:', localStorage.getItem('autoPromoterApiConfig'));
-                          alert(`🔍 Debug Info:\n\nCurrent Config: ${JSON.stringify(apiConfig, null, 2)}\n\nlocalStorage: ${localStorage.getItem('autoPromoterApiConfig')}`);
+                          
+                          // MANUAL FIX: Force reload from localStorage
+                          const savedConfig = localStorage.getItem('autoPromoterApiConfig');
+                          if (savedConfig) {
+                            try {
+                              const parsedConfig = JSON.parse(savedConfig);
+                              console.log('🔧 Manually fixing apiConfig state:', parsedConfig);
+                              setApiConfig(parsedConfig);
+                              
+                              // Force immediate re-render
+                              setForceUpdate(prev => prev + 1);
+                              
+                              alert(`🔧 Manual Fix Applied!\n\nCurrent State: ${JSON.stringify(apiConfig, null, 2)}\n\nlocalStorage: ${savedConfig}\n\nState has been manually synchronized.`);
+                            } catch (error) {
+                              console.error('Error parsing saved config:', error);
+                              alert('Error parsing saved config. Please try again.');
+                            }
+                          } else {
+                            alert(`🔍 Debug Info:\n\nCurrent Config: ${JSON.stringify(apiConfig, null, 2)}\n\nlocalStorage: ${localStorage.getItem('autoPromoterApiConfig')}`);
+                          }
                         }}
                         className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
                       >
