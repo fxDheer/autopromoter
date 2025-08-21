@@ -118,12 +118,15 @@ const GeneratePosts = () => {
             const enabledCount = Object.values(parsedConfig).filter(platform => platform?.enabled).length;
             console.log(`🔍 Found ${enabledCount} enabled platform(s) in saved config`);
             
+            // CRITICAL FIX: Always set the config to state, regardless of enabled status
+            setApiConfig(parsedConfig);
+            console.log('✅ Set apiConfig state with saved config:', parsedConfig);
+            
             if (enabledCount > 0) {
               console.log(`✅ Using saved config with ${enabledCount} enabled platform(s)`);
-              setApiConfig(parsedConfig);
               return; // Use saved config, don't override
             } else {
-              console.log('⚠️ Saved config has no enabled platforms, will check environment variables');
+              console.log('⚠️ Saved config has no enabled platforms, but keeping it in state');
             }
           } catch (error) {
             console.error('Error parsing saved config:', error);
@@ -166,6 +169,20 @@ const GeneratePosts = () => {
         }
       } catch (error) {
         console.error('Error loading API configuration:', error);
+      }
+      
+      // FINAL SAFEGUARD: Ensure apiConfig is never empty
+      if (Object.keys(apiConfig).length === 0) {
+        console.log('⚠️ apiConfig is empty, setting default structure');
+        const defaultConfig = {
+          facebook: { enabled: false, accessToken: '', pageId: '', appId: '', appSecret: '' },
+          instagram: { enabled: false, accessToken: '', businessAccountId: '', appId: '', appSecret: '' },
+          linkedin: { enabled: false, accessToken: '', organizationId: '', clientId: '', clientSecret: '' },
+          tiktok: { enabled: false, accessToken: '', businessId: '', appId: '', appSecret: '' },
+          youtube: { enabled: false, apiKey: '', channelId: '', clientId: '', clientSecret: '' }
+        };
+        setApiConfig(defaultConfig);
+        console.log('✅ Set default apiConfig structure:', defaultConfig);
       }
     };
 
