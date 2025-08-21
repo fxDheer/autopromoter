@@ -22,6 +22,33 @@ export default function BusinessForm() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Business Info, 2: Social Media
 
+  // Validation functions
+  const isBusinessInfoValid = () => {
+    return form.name.trim() !== '' && 
+           form.url.trim() !== '' && 
+           form.description.trim() !== '' && 
+           form.audience.trim() !== '' && 
+           form.keywords.trim() !== '';
+  };
+
+  const isSocialMediaValid = () => {
+    // At least one social media platform must be filled
+    return Object.values(socialMedia).some(value => value.trim() !== '');
+  };
+
+  const getValidationMessage = () => {
+    if (step === 1) {
+      if (!form.name.trim()) return "Business name is required";
+      if (!form.url.trim()) return "Website URL is required";
+      if (!form.description.trim()) return "Business description is required";
+      if (!form.audience.trim()) return "Target audience is required";
+      if (!form.keywords.trim()) return "Keywords are required";
+    } else if (step === 2) {
+      if (!isSocialMediaValid()) return "At least one social media platform is required";
+    }
+    return "";
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -35,9 +62,20 @@ export default function BusinessForm() {
     console.log("Submit clicked, step:", step);
     
     if (step === 1) {
+      if (!isBusinessInfoValid()) {
+        alert("Please fill in all required business information fields before proceeding.");
+        return;
+      }
       console.log("Moving to step 2");
       setStep(2);
       return;
+    }
+    
+    if (step === 2) {
+      if (!isSocialMediaValid()) {
+        alert("Please fill in at least one social media platform before proceeding.");
+        return;
+      }
     }
     
     console.log("Final submit - navigating to generate-posts");
@@ -189,7 +227,7 @@ export default function BusinessForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="group">
                     <label className="block text-sm font-semibold text-emerald-200 mb-3 group-hover:text-white transition-colors">
-                      🏢 Business Name *
+                      🏢 Business Name <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -198,13 +236,15 @@ export default function BusinessForm() {
                       value={form.name}
                       onChange={handleChange}
                       required
-                      className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20"
+                      className={`w-full p-4 bg-white/10 border rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20 ${
+                        form.name.trim() === '' ? 'border-red-400/50' : 'border-white/20'
+                      }`}
                     />
                   </div>
                   
                   <div className="group">
                     <label className="block text-sm font-semibold text-emerald-200 mb-3 group-hover:text-white transition-colors">
-                      🌐 Website URL *
+                      🌐 Website URL <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="url"
@@ -213,14 +253,16 @@ export default function BusinessForm() {
                       value={form.url}
                       onChange={handleChange}
                       required
-                      className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20"
+                      className={`w-full p-4 bg-white/10 border rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20 ${
+                        form.url.trim() === '' ? 'border-red-400/50' : 'border-white/20'
+                      }`}
                     />
                   </div>
                 </div>
                 
                 <div className="mt-6 group">
                   <label className="block text-sm font-semibold text-emerald-200 mb-3 group-hover:text-white transition-colors">
-                    📖 Business Description *
+                    📖 Business Description <span className="text-red-400">*</span>
                   </label>
                   <textarea
                     name="description"
@@ -229,14 +271,16 @@ export default function BusinessForm() {
                     onChange={handleChange}
                     required
                     rows="4"
-                    className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20 resize-none"
+                    className={`w-full p-4 bg-white/10 border rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20 resize-none ${
+                      form.description.trim() === '' ? 'border-red-400/50' : 'border-white/20'
+                    }`}
                   />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                   <div className="group">
                     <label className="block text-sm font-semibold text-emerald-200 mb-3 group-hover:text-white transition-colors">
-                      👥 Target Audience *
+                      👥 Target Audience <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -245,13 +289,15 @@ export default function BusinessForm() {
                       value={form.audience}
                       onChange={handleChange}
                       required
-                      className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20"
+                      className={`w-full p-4 bg-white/10 border rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20 ${
+                        form.audience.trim() === '' ? 'border-red-400/50' : 'border-white/20'
+                      }`}
                     />
                   </div>
                   
                   <div className="group">
                     <label className="block text-sm font-semibold text-emerald-200 mb-3 group-hover:text-white transition-colors">
-                      🔑 Keywords *
+                      🔑 Keywords <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -260,16 +306,28 @@ export default function BusinessForm() {
                       value={form.keywords}
                       onChange={handleChange}
                       required
-                      className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20"
+                      className={`w-full p-4 bg-white/10 border rounded-xl text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/20 ${
+                        form.keywords.trim() === '' ? 'border-red-400/50' : 'border-white/20'
+                      }`}
                     />
                   </div>
                 </div>
                 
                 <div className="mt-8 text-center">
+                  {/* Validation Message */}
+                  {!isBusinessInfoValid() && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
+                      <p className="text-red-300 text-sm">
+                        ⚠️ {getValidationMessage()}
+                      </p>
+                    </div>
+                  )}
+                  
                   <button 
                     type="button"
                     onClick={handleSubmit}
-                    className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/50 transition-all duration-300 transform hover:scale-105 shadow-2xl"
+                    disabled={!isBusinessInfoValid()}
+                    className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/50 transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:scale-100"
                   >
                     <span className="mr-2">Next: Connect Social Media</span>
                     <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
@@ -280,7 +338,10 @@ export default function BusinessForm() {
               <>
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-white mb-2">📱 Connect Your Social Media</h2>
-                  <p className="text-emerald-200">Add your social media accounts where you want to post content</p>
+                  <p className="text-emerald-200 mb-2">Add your social media accounts where you want to post content</p>
+                  <p className="text-sm text-emerald-300 bg-emerald-500/20 px-3 py-1 rounded-full inline-block">
+                    ⚠️ At least one social media platform is required
+                  </p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -375,11 +436,21 @@ export default function BusinessForm() {
                   >
                     ← Back
                   </button>
+                  
+                  {/* Validation Message */}
+                  {!isSocialMediaValid() && (
+                    <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
+                      <p className="text-red-300 text-sm">
+                        ⚠️ {getValidationMessage()}
+                      </p>
+                    </div>
+                  )}
+                  
                   <button 
                     type="button"
                     onClick={handleSubmit}
-                    disabled={loading}
-                    className="flex-1 group relative inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/50 transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    disabled={loading || !isSocialMediaValid()}
+                    className="flex-1 group relative inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/50 transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:scale-100"
                   >
                     {loading ? (
                       <>
