@@ -137,26 +137,32 @@ const GeneratePosts = () => {
         // Convert to API config format
         const autoConfig = convertToApiConfig(envConfig);
         
-        // Set the API configuration automatically
-        setApiConfig(autoConfig);
-        
-        // Save to localStorage
-        localStorage.setItem('autoPromoterApiConfig', JSON.stringify(autoConfig));
-        
-        console.log('✅ API configuration loaded from environment variables!');
-        console.log('Loaded config:', autoConfig);
-        
-        // Show success message if APIs are loaded
-        const enabledCount = Object.values(autoConfig).filter(platform => platform.enabled).length;
-        if (enabledCount > 0) {
-          setTimeout(() => {
-            alert(`🎉 API Configuration Auto-Loaded!\n\n✅ ${enabledCount} platform(s) automatically configured:\n${Object.entries(autoConfig)
-              .filter(([_, platform]) => platform.enabled)
-              .map(([platform, _]) => `• ${platform.charAt(0).toUpperCase() + platform.slice(1)}`)
-              .join('\n')}\n\nYour Auto-Promoter is ready to use! 🚀`);
-          }, 1000);
+        // IMPORTANT: Only use environment variables if we have NO saved config at all
+        // Don't override saved config even if it has no enabled platforms
+        if (!savedConfig) {
+          // Set the API configuration automatically
+          setApiConfig(autoConfig);
+          
+          // Save to localStorage
+          localStorage.setItem('autoPromoterApiConfig', JSON.stringify(autoConfig));
+          
+          console.log('✅ API configuration loaded from environment variables!');
+          console.log('Loaded config:', autoConfig);
+          
+          // Show success message if APIs are loaded
+          const enabledCount = Object.values(autoConfig).filter(platform => platform.enabled).length;
+          if (enabledCount > 0) {
+            setTimeout(() => {
+              alert(`🎉 API Configuration Auto-Loaded!\n\n✅ ${enabledCount} platform(s) automatically configured:\n${Object.entries(autoConfig)
+                .filter(([_, platform]) => platform.enabled)
+                .map(([platform, _]) => `• ${platform.charAt(0).toUpperCase() + platform.slice(1)}`)
+                .join('\n')}\n\nYour Auto-Promoter is ready to use! 🚀`);
+            }, 1000);
+          } else {
+            console.log('⚠️ No platforms enabled automatically. Please configure APIs manually.');
+          }
         } else {
-          console.log('⚠️ No platforms enabled automatically. Please configure APIs manually.');
+          console.log('✅ Keeping existing saved config (even if no platforms enabled)');
         }
       } catch (error) {
         console.error('Error loading API configuration:', error);
@@ -309,18 +315,6 @@ const GeneratePosts = () => {
     };
 
     fetchBusinessAndGenerate();
-  }, []);
-
-  // Load saved API configuration
-  useEffect(() => {
-    const savedConfig = localStorage.getItem('autoPromoterApiConfig');
-    if (savedConfig) {
-      try {
-        setApiConfig(JSON.parse(savedConfig));
-      } catch (error) {
-        console.error('Error loading saved API config:', error);
-      }
-    }
   }, []);
 
   const getStatusIcon = (status) => {
