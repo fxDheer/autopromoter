@@ -73,6 +73,21 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
       }
     }));
 
+    // Auto-enable platform if required fields are filled
+    const platformConfig = { ...config[platform], [field]: value };
+    const required = requirements[platform].required;
+    const hasRequiredFields = required.every(reqField => platformConfig[reqField] && platformConfig[reqField].trim() !== '');
+    
+    if (hasRequiredFields && !platformConfig.enabled) {
+      setConfig(prev => ({
+        ...prev,
+        [platform]: {
+          ...platformConfig,
+          enabled: true
+        }
+      }));
+    }
+
     // Clear error when user starts typing
     if (errors[platform] && errors[platform][field]) {
       setErrors(prev => ({
@@ -105,8 +120,8 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         const required = requirements[platform].required;
         
         required.forEach(field => {
-          if (!config[platform][field]) {
-            platformErrors[field] = `${field} is required`;
+          if (!config[platform][field] || config[platform][field].trim() === '') {
+            platformErrors[field] = `${getDisplayName(field)} is required`;
           }
         });
         
@@ -121,8 +136,23 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
       return;
     }
 
+    // Auto-enable platforms that have all required fields filled
+    const finalConfig = { ...config };
+    Object.keys(finalConfig).forEach(platform => {
+      const required = requirements[platform].required;
+      const hasRequiredFields = required.every(reqField => 
+        finalConfig[platform][reqField] && finalConfig[platform][reqField].trim() !== ''
+      );
+      
+      if (hasRequiredFields) {
+        finalConfig[platform].enabled = true;
+      }
+    });
+
+    console.log('💾 Final config to save:', finalConfig);
+    
     // Save all platforms (enabled and disabled) to preserve state
-    onSave(config);
+    onSave(finalConfig);
     onClose();
   };
 
@@ -167,6 +197,12 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
           <p className="text-purple-100 mt-2">
             Configure your social media API keys to enable auto-posting
           </p>
+          <div className="bg-white/20 rounded-lg p-3 mt-3">
+            <p className="text-sm text-white">
+              💡 <strong>Pro Tip:</strong> Platforms are automatically enabled when you fill in all required fields. 
+              You can also manually toggle them using the checkboxes below.
+            </p>
+          </div>
         </div>
 
         <div className="flex h-[calc(90vh-120px)]">
@@ -219,6 +255,11 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                     />
                     <span className="font-medium text-gray-700">Enable {platform} auto-posting</span>
                   </label>
+                  {config[platform].enabled && (
+                    <p className="text-sm text-green-600 mt-2 ml-8">
+                      ✅ Platform will be automatically enabled when all required fields are filled
+                    </p>
+                  )}
                 </div>
 
                 {config[platform].enabled && (
@@ -312,7 +353,12 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         <div className="border-t border-gray-200 p-6 bg-gray-50">
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-600">
-              {Object.values(config).filter(c => c.enabled).length} platform(s) configured
+              <span className="font-medium">
+                {Object.values(config).filter(c => c.enabled).length} platform(s) configured
+              </span>
+              <span className="text-gray-500 ml-2">
+                out of {Object.keys(config).length} total
+              </span>
             </div>
             <div className="space-x-3">
               <button
