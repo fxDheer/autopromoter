@@ -147,9 +147,10 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   };
 
   const handleSave = () => {
-    const newErrors = {};
+    console.log('💾 Starting save process...');
+    console.log('🔍 Current config before save:', config);
     
-    // Auto-enable platforms that have all required fields filled FIRST
+    // Auto-enable platforms that have all required fields filled
     const finalConfig = { ...config };
     Object.keys(finalConfig).forEach(platform => {
       const required = requirements[platform].required;
@@ -162,29 +163,6 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         console.log(`🚀 Auto-enabling ${platform} - all required fields filled`);
       }
     });
-
-    // Now validate enabled platforms
-    Object.keys(finalConfig).forEach(platform => {
-      if (finalConfig[platform].enabled) {
-        const platformErrors = {};
-        const required = requirements[platform].required;
-        
-        required.forEach(field => {
-          if (!finalConfig[platform][field] || finalConfig[platform][field].trim() === '') {
-            platformErrors[field] = `${getDisplayName(field)} is required`;
-          }
-        });
-        
-        if (Object.keys(platformErrors).length > 0) {
-          newErrors[platform] = platformErrors;
-        }
-      }
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
 
     console.log('💾 Final config to save:', finalConfig);
     console.log('🔍 Enabled platforms:', Object.keys(finalConfig).filter(p => finalConfig[p].enabled));
@@ -251,7 +229,7 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
           </p>
           <div className="bg-white/20 rounded-lg p-3 mt-3">
             <p className="text-sm text-white">
-              💡 <strong>Pro Tip:</strong> Platforms are automatically enabled when you fill in all required fields. 
+              💡 <strong>Pro Tip:</strong> Fill in the required fields and the platform will automatically be enabled! 
               You can also manually toggle them using the checkboxes below.
             </p>
           </div>
@@ -309,93 +287,92 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                   </label>
                   {config[platform].enabled && (
                     <p className="text-sm text-green-600 mt-2 ml-8">
-                      ✅ Platform will be automatically enabled when all required fields are filled
+                      ✅ Platform is enabled and ready for auto-posting!
                     </p>
                   )}
                 </div>
 
-                {config[platform].enabled && (
-                  <div className="space-y-6">
-                    {/* Required Fields */}
+                {/* ALWAYS SHOW FIELDS - This is the key fix! */}
+                <div className="space-y-6">
+                  {/* Required Fields */}
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-4">Required Settings <span className="text-red-500">*</span></h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {requirements[platform].required.map((field) => (
+                        <div key={field}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {getDisplayName(field)} <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type={field.includes('Secret') || field.includes('Token') ? 'password' : 'text'}
+                            value={config[platform][field]}
+                            onChange={(e) => handleConfigChange(platform, field, e.target.value)}
+                            className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                              errors[platform] && errors[platform][field] ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                            placeholder={`Enter your ${getDisplayName(field)}`}
+                          />
+                          {errors[platform] && errors[platform][field] && (
+                            <p className="text-red-500 text-sm mt-1">{errors[platform][field]}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Optional Fields */}
+                  {requirements[platform].optional.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-gray-800 mb-4">Required Settings</h4>
+                      <h4 className="font-semibold text-gray-800 mb-4">Optional Settings</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {requirements[platform].required.map((field) => (
+                        {requirements[platform].optional.map((field) => (
                           <div key={field}>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               {getDisplayName(field)}
                             </label>
                             <input
-                              type={field.includes('Secret') || field.includes('Token') ? 'password' : 'text'}
+                              type={field.includes('Secret') ? 'password' : 'text'}
                               value={config[platform][field]}
                               onChange={(e) => handleConfigChange(platform, field, e.target.value)}
-                              className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                                errors[platform] && errors[platform][field] ? 'border-red-500' : 'border-gray-300'
-                              }`}
-                              placeholder={`Enter your ${getDisplayName(field)}`}
+                              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder={`Enter your ${getDisplayName(field)} (optional)`}
                             />
-                            {errors[platform] && errors[platform][field] && (
-                              <p className="text-red-500 text-sm mt-1">{errors[platform][field]}</p>
-                            )}
                           </div>
                         ))}
                       </div>
                     </div>
+                  )}
 
-                    {/* Optional Fields */}
-                    {requirements[platform].optional.length > 0 && (
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-4">Optional Settings</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {requirements[platform].optional.map((field) => (
-                            <div key={field}>
-                                                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                              {getDisplayName(field)}
-                            </label>
-                              <input
-                                type={field.includes('Secret') ? 'password' : 'text'}
-                                value={config[platform][field]}
-                                onChange={(e) => handleConfigChange(platform, field, e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                placeholder={`Enter your ${getDisplayName(field)} (optional)`}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Setup Instructions */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                      <h4 className="font-semibold text-blue-800 mb-2">Setup Instructions</h4>
-                      <p className="text-blue-700 text-sm mb-3">
-                        Follow the official documentation to get your API credentials:
-                      </p>
-                      <a
-                        href={requirements[platform].setupUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        <span>📖 View Setup Guide</span>
-                        <span>→</span>
-                      </a>
-                    </div>
-
-                    {/* Required Permissions */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                      <h4 className="font-semibold text-yellow-800 mb-2">Required Permissions</h4>
-                      <ul className="text-yellow-700 text-sm space-y-1">
-                        {requirements[platform].permissions.map((permission, index) => (
-                          <li key={index} className="flex items-center space-x-2">
-                            <span>🔑</span>
-                            <span>{permission}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  {/* Setup Instructions */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <h4 className="font-semibold text-blue-800 mb-2">Setup Instructions</h4>
+                    <p className="text-blue-700 text-sm mb-3">
+                      Follow the official documentation to get your API credentials:
+                    </p>
+                    <a
+                      href={requirements[platform].setupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <span>📖 View Setup Guide</span>
+                      <span>→</span>
+                    </a>
                   </div>
-                )}
+
+                  {/* Required Permissions */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <h4 className="font-semibold text-yellow-800 mb-2">Required Permissions</h4>
+                    <ul className="text-yellow-700 text-sm space-y-1">
+                      {requirements[platform].permissions.map((permission, index) => (
+                        <li key={index} className="flex items-center space-x-2">
+                          <span>🔑</span>
+                          <span>{permission}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
