@@ -231,11 +231,101 @@ const tiktokService = {
   }
 };
 
-// Main posting endpoint
+// Main posting endpoint - handles both single platform and multiple platforms
 router.post('/post', async (req, res) => {
   try {
-    const { content, platforms, business } = req.body;
+    const { content, platforms, business, platform, config } = req.body;
     
+    // Handle single platform request (from frontend individual calls)
+    if (platform && config) {
+      console.log(`🚀 Single platform post request for ${platform}`);
+      
+      if (!content) {
+        return res.status(400).json({
+          error: 'Missing required fields',
+          required: ['content', 'platform', 'config']
+        });
+      }
+
+      let result = { platform, success: false };
+
+      try {
+        switch (platform.toLowerCase()) {
+          case 'facebook':
+            if (content.type === 'image' && content.imageUrl) {
+              result = await facebookService.postImageToPage(
+                content, 
+                config.accessToken, 
+                config.pageId
+              );
+            } else {
+              result = await facebookService.postToPage(
+                content, 
+                config.accessToken, 
+                config.pageId
+              );
+            }
+            break;
+
+          case 'instagram':
+            result = await instagramService.createMedia(
+              content, 
+              config.accessToken, 
+              config.businessAccountId
+            );
+            break;
+
+          case 'youtube':
+            if (content.type === 'video') {
+              result = await youtubeService.uploadVideo(
+                content, 
+                config.apiKey, 
+                config.channelId
+              );
+            } else {
+              result = await youtubeService.createPost(
+                content, 
+                config.apiKey, 
+                config.channelId
+              );
+            }
+            break;
+
+          case 'linkedin':
+            result = await linkedinService.createPost(
+              content, 
+              config.accessToken, 
+              config.organizationId
+            );
+            break;
+
+          case 'tiktok':
+            result = await tiktokService.createPost(
+              content, 
+              config.accessToken, 
+              config.businessId
+            );
+            break;
+
+          default:
+            result = {
+              success: false,
+              platform,
+              error: `Unsupported platform: ${platform}`
+            };
+        }
+      } catch (error) {
+        result = {
+          success: false,
+          platform,
+          error: error.message
+        };
+      }
+
+      return res.json(result);
+    }
+    
+    // Handle multiple platforms request (original functionality)
     if (!content || !platforms || !business) {
       return res.status(400).json({
         error: 'Missing required fields',
