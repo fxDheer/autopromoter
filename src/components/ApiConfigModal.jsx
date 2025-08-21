@@ -1,45 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getPlatformRequirements, validateApiKeys } from '../utils/socialMediaService';
 
 const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
-  const [config, setConfig] = useState({
-    facebook: {
-      enabled: false,
-      accessToken: '',
-      pageId: '',
-      appId: '',
-      appSecret: ''
-    },
-    instagram: {
-      enabled: false,
-      accessToken: '',
-      businessAccountId: '',
-      appId: '',
-      appSecret: ''
-    },
-    linkedin: {
-      enabled: false,
-      accessToken: '',
-      organizationId: '',
-      clientId: '',
-      clientSecret: ''
-    },
-    tiktok: {
-      enabled: false,
-      accessToken: '',
-      businessId: '',
-      appId: '',
-      appSecret: ''
-    },
-    youtube: {
-      enabled: false,
-      apiKey: '',
-      channelId: '',
-      clientId: '',
-      clientSecret: ''
-    },
-    ...currentConfig
+  const [config, setConfig] = useState(() => {
+    // Initialize with current config or default values
+    const defaultConfig = {
+      facebook: {
+        enabled: false,
+        accessToken: '',
+        pageId: '',
+        appId: '',
+        appSecret: ''
+      },
+      instagram: {
+        enabled: false,
+        accessToken: '',
+        businessAccountId: '',
+        appId: '',
+        appSecret: ''
+      },
+      linkedin: {
+        enabled: false,
+        accessToken: '',
+        organizationId: '',
+        clientId: '',
+        clientSecret: ''
+      },
+      tiktok: {
+        enabled: false,
+        accessToken: '',
+        businessId: '',
+        appId: '',
+        appSecret: ''
+      },
+      youtube: {
+        enabled: false,
+        apiKey: '',
+        channelId: '',
+        clientId: '',
+        clientSecret: ''
+      }
+    };
+
+    // Merge with current config, ensuring all fields are present
+    const mergedConfig = {};
+    Object.keys(defaultConfig).forEach(platform => {
+      mergedConfig[platform] = {
+        ...defaultConfig[platform],
+        ...currentConfig[platform]
+      };
+    });
+
+    console.log('🔧 Modal initialized with config:', mergedConfig);
+    return mergedConfig;
   });
+
+  // Update config when currentConfig changes (e.g., when modal opens)
+  useEffect(() => {
+    if (isOpen && Object.keys(currentConfig).length > 0) {
+      console.log('🔄 Updating modal config with currentConfig:', currentConfig);
+      setConfig(prev => {
+        const updatedConfig = {};
+        Object.keys(prev).forEach(platform => {
+          updatedConfig[platform] = {
+            ...prev[platform],
+            ...currentConfig[platform]
+          };
+        });
+        console.log('✅ Updated modal config:', updatedConfig);
+        return updatedConfig;
+      });
+    }
+  }, [isOpen, currentConfig]);
 
   const [errors, setErrors] = useState({});
   const [activeTab, setActiveTab] = useState('facebook');
@@ -65,28 +97,32 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   };
 
   const handleConfigChange = (platform, field, value) => {
-    setConfig(prev => ({
-      ...prev,
-      [platform]: {
-        ...prev[platform],
-        [field]: value
-      }
-    }));
-
-    // Auto-enable platform if required fields are filled
-    const platformConfig = { ...config[platform], [field]: value };
-    const required = requirements[platform].required;
-    const hasRequiredFields = required.every(reqField => platformConfig[reqField] && platformConfig[reqField].trim() !== '');
-    
-    if (hasRequiredFields && !platformConfig.enabled) {
-      setConfig(prev => ({
+    setConfig(prev => {
+      const newConfig = {
         ...prev,
         [platform]: {
+          ...prev[platform],
+          [field]: value
+        }
+      };
+
+      // Auto-enable platform if required fields are filled
+      const platformConfig = newConfig[platform];
+      const required = requirements[platform].required;
+      const hasRequiredFields = required.every(reqField => 
+        platformConfig[reqField] && platformConfig[reqField].trim() !== ''
+      );
+      
+      if (hasRequiredFields && !platformConfig.enabled) {
+        console.log(`🚀 Auto-enabling ${platform} - all required fields filled`);
+        newConfig[platform] = {
           ...platformConfig,
           enabled: true
-        }
-      }));
-    }
+        };
+      }
+
+      return newConfig;
+    });
 
     // Clear error when user starts typing
     if (errors[platform] && errors[platform][field]) {
@@ -187,12 +223,25 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">🔐 Social Media API Configuration</h2>
-            <button
-              onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors"
-            >
-              ✕
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => {
+                  console.log('🔍 Modal Debug Info:');
+                  console.log('Current Config State:', config);
+                  console.log('Current Config Prop:', currentConfig);
+                  alert(`🔍 Modal Debug Info:\n\nCurrent State: ${JSON.stringify(config, null, 2)}\n\nCurrent Prop: ${JSON.stringify(currentConfig, null, 2)}`);
+                }}
+                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                🔍 Debug
+              </button>
+              <button
+                onClick={onClose}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
           </div>
           <p className="text-purple-100 mt-2">
             Configure your social media API keys to enable auto-posting
