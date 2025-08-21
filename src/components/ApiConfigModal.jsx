@@ -97,6 +97,9 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   };
 
   const handleConfigChange = (platform, field, value) => {
+    console.log(`🔧 handleConfigChange called: ${platform}.${field} = "${value}"`);
+    console.log(`🔍 Previous config for ${platform}:`, config[platform]);
+    
     setConfig(prev => {
       const newConfig = {
         ...prev,
@@ -106,6 +109,8 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         }
       };
 
+      console.log(`🔍 New config for ${platform}:`, newConfig[platform]);
+
       // Auto-enable platform if required fields are filled
       const platformConfig = newConfig[platform];
       const required = requirements[platform].required;
@@ -113,14 +118,20 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         platformConfig[reqField] && platformConfig[reqField].trim() !== ''
       );
       
+      console.log(`🔍 Required fields for ${platform}:`, required);
+      console.log(`🔍 Has required fields:`, hasRequiredFields);
+      console.log(`🔍 Current enabled status:`, platformConfig.enabled);
+      
       if (hasRequiredFields && !platformConfig.enabled) {
         console.log(`🚀 Auto-enabling ${platform} - all required fields filled`);
         newConfig[platform] = {
           ...platformConfig,
           enabled: true
         };
+        console.log(`✅ ${platform} now enabled:`, newConfig[platform].enabled);
       }
 
+      console.log(`🔍 Final config for ${platform}:`, newConfig[platform]);
       return newConfig;
     });
 
@@ -149,14 +160,22 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   const handleSave = () => {
     console.log('💾 Starting save process...');
     console.log('🔍 Current config before save:', config);
+    console.log('🔍 Current config type:', typeof config);
+    console.log('🔍 Current config keys:', Object.keys(config));
     
     // Auto-enable platforms that have all required fields filled
     const finalConfig = { ...config };
+    console.log('🔍 Final config after spread:', finalConfig);
+    
     Object.keys(finalConfig).forEach(platform => {
       const required = requirements[platform].required;
       const hasRequiredFields = required.every(reqField => 
         finalConfig[platform][reqField] && finalConfig[platform][reqField].trim() !== ''
       );
+      
+      console.log(`🔍 ${platform} - Required fields:`, required);
+      console.log(`🔍 ${platform} - Has required fields:`, hasRequiredFields);
+      console.log(`🔍 ${platform} - Current enabled:`, finalConfig[platform].enabled);
       
       if (hasRequiredFields) {
         finalConfig[platform].enabled = true;
@@ -170,10 +189,28 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
     console.log('🔍 Facebook enabled:', finalConfig.facebook.enabled);
     console.log('🔍 Facebook accessToken:', finalConfig.facebook.accessToken);
     console.log('🔍 Facebook pageId:', finalConfig.facebook.pageId);
+    console.log('🔍 Facebook appId:', finalConfig.facebook.appId);
+    console.log('🔍 Facebook appSecret:', finalConfig.facebook.appSecret);
+    
+    // Validate that we have actual data
+    const facebookHasData = finalConfig.facebook.accessToken && 
+                           finalConfig.facebook.pageId && 
+                           finalConfig.facebook.appId && 
+                           finalConfig.facebook.appSecret;
+    
+    console.log('🔍 Facebook has complete data:', facebookHasData);
     
     // Save all platforms (enabled and disabled) to preserve state
     console.log('🚀 Calling onSave with:', finalConfig);
-    onSave(finalConfig);
+    console.log('🚀 onSave function type:', typeof onSave);
+    
+    try {
+      onSave(finalConfig);
+      console.log('✅ onSave called successfully');
+    } catch (error) {
+      console.error('❌ Error calling onSave:', error);
+    }
+    
     onClose();
   };
 
@@ -219,6 +256,16 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                 className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
               >
                 🔍 Debug
+              </button>
+              <button
+                onClick={() => {
+                  console.log('🧪 Testing save function manually...');
+                  console.log('Current config state:', config);
+                  handleSave();
+                }}
+                className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+              >
+                🧪 Test Save
               </button>
               <button
                 onClick={onClose}
