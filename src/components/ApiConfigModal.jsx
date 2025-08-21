@@ -167,8 +167,12 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
     console.log('💾 Final config to save:', finalConfig);
     console.log('🔍 Enabled platforms:', Object.keys(finalConfig).filter(p => finalConfig[p].enabled));
     console.log('🔍 Facebook config:', finalConfig.facebook);
+    console.log('🔍 Facebook enabled:', finalConfig.facebook.enabled);
+    console.log('🔍 Facebook accessToken:', finalConfig.facebook.accessToken);
+    console.log('🔍 Facebook pageId:', finalConfig.facebook.pageId);
     
     // Save all platforms (enabled and disabled) to preserve state
+    console.log('🚀 Calling onSave with:', finalConfig);
     onSave(finalConfig);
     onClose();
   };

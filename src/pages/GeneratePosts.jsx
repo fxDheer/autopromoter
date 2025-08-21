@@ -72,12 +72,24 @@ const GeneratePosts = () => {
     console.log('✅ Normalized config:', normalizedConfig);
     console.log('🔍 Enabled platforms after normalization:', Object.keys(normalizedConfig).filter(p => normalizedConfig[p].enabled));
     
-    setApiConfig(normalizedConfig);
+    // Save to localStorage FIRST
     localStorage.setItem('autoPromoterApiConfig', JSON.stringify(normalizedConfig));
     
     // Verify what was actually saved
     const savedConfig = localStorage.getItem('autoPromoterApiConfig');
     console.log('🔍 What was actually saved to localStorage:', savedConfig);
+    
+    // Parse and verify the saved config
+    try {
+      const parsedSavedConfig = JSON.parse(savedConfig);
+      console.log('🔍 Parsed saved config:', parsedSavedConfig);
+      console.log('🔍 Facebook enabled status:', parsedSavedConfig.facebook?.enabled);
+    } catch (error) {
+      console.error('❌ Error parsing saved config:', error);
+    }
+    
+    // Update state
+    setApiConfig(normalizedConfig);
     
     // Count enabled platforms
     const enabledCount = Object.values(normalizedConfig).filter(platform => platform.enabled).length;
@@ -104,10 +116,14 @@ const GeneratePosts = () => {
             
             // Check if any platforms are enabled in the saved config
             const enabledCount = Object.values(parsedConfig).filter(platform => platform?.enabled).length;
+            console.log(`🔍 Found ${enabledCount} enabled platform(s) in saved config`);
+            
             if (enabledCount > 0) {
-              console.log(`✅ Found ${enabledCount} enabled platform(s) in saved config`);
+              console.log(`✅ Using saved config with ${enabledCount} enabled platform(s)`);
               setApiConfig(parsedConfig);
               return; // Use saved config, don't override
+            } else {
+              console.log('⚠️ Saved config has no enabled platforms, will check environment variables');
             }
           } catch (error) {
             console.error('Error parsing saved config:', error);
