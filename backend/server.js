@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 3001;
 const socialMediaRoutes = require('./routes/socialMedia');
 const contentRoutes = require('./routes/content');
 const businessRoutes = require('./routes/business');
+const zapierRoutes = require('./routes/zapier');
 
 // Middleware
 app.use(helmet()); // Security headers
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/social-media', socialMediaRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/business', businessRoutes);
+app.use('/api/zapier', zapierRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -70,7 +72,8 @@ if (process.env.NODE_ENV !== 'production') {
         health: '/api/health',
         socialMedia: '/api/social-media',
         content: '/api/content',
-        business: '/api/business'
+        business: '/api/business',
+        zapier: '/api/zapier'
       }
     });
   });
