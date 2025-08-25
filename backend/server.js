@@ -22,7 +22,7 @@ app.use(helmet()); // Security headers
 app.use(morgan('combined')); // Logging
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://autopromoter-autopromoter.up.railway.app'] 
+    ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['https://autopromoter-autopromoter.up.railway.app'])
     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true
 }));
