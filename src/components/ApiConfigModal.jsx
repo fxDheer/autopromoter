@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getPlatformRequirements, validateApiKeys } from '../utils/socialMediaService';
+import { getPlatformRequirements, validateApiKeys, testInstagramYouTube } from '../utils/socialMediaService';
 
 const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   const [config, setConfig] = useState(() => {
@@ -158,60 +158,63 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   };
 
   const handleSave = () => {
-    console.log('💾 Starting save process...');
-    console.log('🔍 Current config before save:', config);
-    console.log('🔍 Current config type:', typeof config);
-    console.log('🔍 Current config keys:', Object.keys(config));
-    
-    // Auto-enable platforms that have all required fields filled
-    const finalConfig = { ...config };
-    console.log('🔍 Final config after spread:', finalConfig);
-    
-    Object.keys(finalConfig).forEach(platform => {
-      const required = requirements[platform].required;
-      const hasRequiredFields = required.every(reqField => 
-        finalConfig[platform][reqField] && finalConfig[platform][reqField].trim() !== ''
-      );
-      
-      console.log(`🔍 ${platform} - Required fields:`, required);
-      console.log(`🔍 ${platform} - Has required fields:`, hasRequiredFields);
-      console.log(`🔍 ${platform} - Current enabled:`, finalConfig[platform].enabled);
-      
-      if (hasRequiredFields) {
-        finalConfig[platform].enabled = true;
-        console.log(`🚀 Auto-enabling ${platform} - all required fields filled`);
-      }
-    });
+    console.log('💾 Saving configuration:', config);
+    onSave(config);
+  };
 
-    console.log('💾 Final config to save:', finalConfig);
-    console.log('🔍 Enabled platforms:', Object.keys(finalConfig).filter(p => finalConfig[p].enabled));
-    console.log('🔍 Facebook config:', finalConfig.facebook);
-    console.log('🔍 Facebook enabled:', finalConfig.facebook.enabled);
-    console.log('🔍 Facebook accessToken:', finalConfig.facebook.accessToken);
-    console.log('🔍 Facebook pageId:', finalConfig.facebook.pageId);
-    console.log('🔍 Facebook appId:', finalConfig.facebook.appId);
-    console.log('🔍 Facebook appSecret:', finalConfig.facebook.appSecret);
-    
-    // Validate that we have actual data
-    const facebookHasData = finalConfig.facebook.accessToken && 
-                           finalConfig.facebook.pageId && 
-                           finalConfig.facebook.appId && 
-                           finalConfig.facebook.appSecret;
-    
-    console.log('🔍 Facebook has complete data:', facebookHasData);
-    
-    // Save all platforms (enabled and disabled) to preserve state
-    console.log('🚀 Calling onSave with:', finalConfig);
-    console.log('🚀 onSave function type:', typeof onSave);
-    
+  // Test Instagram and YouTube APIs specifically
+  const handleTestInstagramYouTube = async () => {
     try {
-      onSave(finalConfig);
-      console.log('✅ onSave called successfully');
+      console.log('🧪 Testing Instagram and YouTube APIs...');
+      
+      // Check if Instagram or YouTube are enabled
+      const hasInstagram = config.instagram?.enabled;
+      const hasYouTube = config.youtube?.enabled;
+      
+      if (!hasInstagram && !hasYouTube) {
+        alert('⚠️ Please enable Instagram or YouTube first before testing!');
+        return;
+      }
+      
+      // Show loading state
+      const testButton = document.querySelector('[data-test="instagram-youtube"]');
+      if (testButton) {
+        testButton.disabled = true;
+        testButton.textContent = '🧪 Testing...';
+      }
+      
+      const result = await testInstagramYouTube(config);
+      
+      if (result.success) {
+        const successCount = result.results.filter(r => r.status === 'connected').length;
+        const totalCount = result.results.length;
+        
+        alert(`✅ Instagram & YouTube Test Complete!\n\n${successCount}/${totalCount} platforms connected successfully!\n\nCheck the console for detailed results.`);
+        
+        // Log detailed results
+        console.log('🧪 Instagram & YouTube Test Results:', result);
+        result.results.forEach(test => {
+          if (test.status === 'connected') {
+            console.log(`✅ ${test.platform}: ${test.message}`, test.data);
+          } else {
+            console.log(`❌ ${test.platform}: ${test.error}`);
+          }
+        });
+      } else {
+        alert(`❌ Instagram & YouTube Test Failed!\n\nError: ${result.error || 'Unknown error'}\n\nCheck the console for details.`);
+        console.error('🧪 Instagram & YouTube Test Failed:', result);
+      }
     } catch (error) {
-      console.error('❌ Error calling onSave:', error);
+      console.error('🧪 Instagram & YouTube Test Error:', error);
+      alert(`❌ Instagram & YouTube Test Error!\n\n${error.message}\n\nCheck the console for details.`);
+    } finally {
+      // Reset button state
+      const testButton = document.querySelector('[data-test="instagram-youtube"]');
+      if (testButton) {
+        testButton.disabled = false;
+        testButton.textContent = '🧪 Test Instagram & YouTube';
+      }
     }
-    
-    onClose();
   };
 
   const getPlatformIcon = (platform) => {
@@ -454,12 +457,19 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                 Save Configuration
               </button>
               <button
+                onClick={handleTestInstagramYouTube}
+                data-test="instagram-youtube"
+                className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold"
+              >
+                🧪 Test Instagram & YouTube
+              </button>
+              <button
                 onClick={() => {
                   handleSave();
                   // Force reload of the main page to update API status
                   window.location.reload();
                 }}
-                className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold"
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold"
               >
                 🚀 Test & Save All APIs
               </button>

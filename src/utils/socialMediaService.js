@@ -385,6 +385,27 @@ export const validateApiKeys = (apiConfig) => {
   return validation;
 };
 
+// Test Instagram and YouTube APIs specifically
+export const testInstagramYouTube = async (apiConfig) => {
+  try {
+    console.log('🧪 Testing Instagram and YouTube APIs...');
+    
+    const result = await callBackendAPI('/social-media/test-instagram-youtube', {
+      instagram: apiConfig.instagram,
+      youtube: apiConfig.youtube
+    });
+    
+    console.log('✅ Instagram/YouTube test completed:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ Instagram/YouTube test failed:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 // Get platform requirements
 export const getPlatformRequirements = () => {
   return {
