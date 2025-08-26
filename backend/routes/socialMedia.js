@@ -79,19 +79,22 @@ const instagramService = {
         throw new Error('Instagram post requires either text, image, or video content');
       }
 
-      // Determine media type
-      let mediaType = 'CAROUSEL_ALBUM'; // Default for multiple images
+      // Determine media type based on content
+      let mediaType = 'IMAGE'; // Default
       if (content.videoUrl) {
         mediaType = 'VIDEO';
-      } else if (content.imageUrl) {
-        mediaType = 'IMAGE';
-      } else {
-        mediaType = 'STORY'; // Text-only posts
+      } else if (content.type === 'reel') {
+        mediaType = 'REELS';
+      } else if (content.type === 'story') {
+        mediaType = 'STORIES';
+      } else if (content.type === 'carousel') {
+        mediaType = 'CAROUSEL';
       }
 
-      // First create the media container
+      console.log('📸 Instagram: Media type determined:', mediaType);
+
+      // Create media container with correct API version (v23.0)
       const mediaData = {
-        caption: content.text || '',
         access_token: accessToken,
         media_type: mediaType
       };
@@ -103,10 +106,59 @@ const instagramService = {
         mediaData.video_url = content.videoUrl;
       }
 
-      console.log('📸 Instagram: Media data:', mediaData);
+      // Add caption if provided
+      if (content.text) {
+        mediaData.caption = content.text;
+      }
 
+      // Add alt text for accessibility (new feature from v23.0)
+      if (content.altText) {
+        mediaData.alt_text = content.altText;
+      }
+
+      // Add location if provided
+      if (content.locationId) {
+        mediaData.location_id = content.locationId;
+      }
+
+      // Add user tags if provided
+      if (content.userTags && Array.isArray(content.userTags)) {
+        mediaData.user_tags = content.userTags;
+      }
+
+      // Add product tags if provided (requires additional permissions)
+      if (content.productTags && Array.isArray(content.productTags)) {
+        mediaData.product_tags = content.productTags;
+      }
+
+      // For Reels, add additional parameters
+      if (mediaType === 'REELS') {
+        if (content.coverUrl) {
+          mediaData.cover_url = content.coverUrl;
+        }
+        if (content.shareToFeed !== undefined) {
+          mediaData.share_to_feed = content.shareToFeed;
+        }
+        if (content.collaborators && Array.isArray(content.collaborators)) {
+          mediaData.collaborators = content.collaborators;
+        }
+      }
+
+      // For Stories, add additional parameters
+      if (mediaType === 'STORIES') {
+        if (content.userTags && Array.isArray(content.userTags)) {
+          // Stories support user tagging without coordinates
+          mediaData.user_tags = content.userTags.map(tag => ({
+            username: tag.username
+          }));
+        }
+      }
+
+      console.log('📸 Instagram: Media data prepared:', mediaData);
+
+      // Create media container using v23.0 API
       const mediaResponse = await axios.post(
-        `https://graph.facebook.com/v18.0/${businessAccountId}/media`,
+        `https://graph.facebook.com/v23.0/${businessAccountId}/media`,
         mediaData,
         {
           headers: { 'Content-Type': 'application/json' }
@@ -117,22 +169,23 @@ const instagramService = {
         throw new Error(mediaResponse.data.error.message);
       }
 
-      console.log('📸 Instagram: Media created successfully:', mediaResponse.data);
+      console.log('📸 Instagram: Media container created successfully:', mediaResponse.data);
 
-      // For text-only posts, we don't need to publish
+      // For text-only posts or stories, we don't need to publish
       if (!content.imageUrl && !content.videoUrl) {
         return {
           success: true,
           postId: mediaResponse.data.id,
           platform: 'Instagram',
           message: 'Text post created successfully on Instagram',
-          data: mediaResponse.data
+          data: mediaResponse.data,
+          note: 'Text posts are automatically published'
         };
       }
 
-      // Then publish the media
+      // For media posts, publish the container
       const publishResponse = await axios.post(
-        `https://graph.facebook.com/v18.0/${businessAccountId}/media_publish`,
+        `https://graph.facebook.com/v23.0/${businessAccountId}/media_publish`,
         {
           creation_id: mediaResponse.data.id,
           access_token: accessToken,
@@ -149,10 +202,81 @@ const instagramService = {
         postId: publishResponse.data.id,
         platform: 'Instagram',
         message: 'Posted successfully to Instagram',
-        data: publishResponse.data
+        data: publishResponse.data,
+        containerId: mediaResponse.data.id
       };
     } catch (error) {
       console.error('❌ Instagram posting error:', error.response?.data || error.message);
+      return {
+        success: false,
+        platform: 'Instagram',
+        error: error.response?.data?.error?.message || error.message
+      };
+    }
+  },
+
+  // New method to get Instagram media
+  async getMedia(businessAccountId, accessToken, limit = 25) {
+    try {
+      console.log('📸 Instagram: Getting media for business account:', businessAccountId);
+      
+      const response = await axios.get(
+        `https://graph.facebook.com/v23.0/${businessAccountId}/media`,
+        {
+          params: {
+            access_token: accessToken,
+            fields: 'id,media_type,media_url,thumbnail_url,permalink,timestamp,caption,like_count,comments_count',
+            limit: limit
+          }
+        }
+      );
+
+      if (response.data.error) {
+        throw new Error(response.data.error.message);
+      }
+
+      return {
+        success: true,
+        platform: 'Instagram',
+        data: response.data,
+        message: 'Instagram media retrieved successfully'
+      };
+    } catch (error) {
+      console.error('❌ Instagram get media error:', error.response?.data || error.message);
+      return {
+        success: false,
+        platform: 'Instagram',
+        error: error.response?.data?.error?.message || error.message
+      };
+    }
+  },
+
+  // New method to check content publishing limits
+  async checkPublishingLimits(businessAccountId, accessToken) {
+    try {
+      console.log('📸 Instagram: Checking publishing limits for:', businessAccountId);
+      
+      const response = await axios.get(
+        `https://graph.facebook.com/v23.0/${businessAccountId}/content_publishing_limit`,
+        {
+          params: {
+            access_token: accessToken
+          }
+        }
+      );
+
+      if (response.data.error) {
+        throw new Error(response.data.error.message);
+      }
+
+      return {
+        success: true,
+        platform: 'Instagram',
+        data: response.data,
+        message: 'Instagram publishing limits retrieved successfully'
+      };
+    } catch (error) {
+      console.error('❌ Instagram publishing limits error:', error.response?.data || error.message);
       return {
         success: false,
         platform: 'Instagram',
@@ -646,7 +770,7 @@ router.post('/test-config', async (req, res) => {
             // Test Instagram API access
             console.log('📸 Testing Instagram API for business account:', config.businessAccountId);
             const igResponse = await axios.get(
-              `https://graph.facebook.com/v18.0/${config.businessAccountId}`,
+              `https://graph.facebook.com/v23.0/${config.businessAccountId}`,
               {
                 params: {
                   access_token: config.accessToken,
@@ -746,7 +870,7 @@ router.post('/test-instagram-youtube', async (req, res) => {
       try {
         console.log('📸 Testing Instagram API...');
         const igResponse = await axios.get(
-          `https://graph.facebook.com/v18.0/${instagram.businessAccountId}`,
+          `https://graph.facebook.com/v23.0/${instagram.businessAccountId}`,
           {
             params: {
               access_token: instagram.accessToken,
@@ -830,6 +954,61 @@ router.post('/test-instagram-youtube', async (req, res) => {
 
   } catch (error) {
     console.error('Instagram/YouTube test error:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+// New Instagram-specific endpoints
+router.get('/instagram/:businessAccountId/media', async (req, res) => {
+  try {
+    const { businessAccountId } = req.params;
+    const { access_token, limit = 25 } = req.query;
+    
+    if (!access_token) {
+      return res.status(400).json({
+        error: 'Missing access_token parameter'
+      });
+    }
+    
+    const result = await instagramService.getMedia(businessAccountId, access_token, limit);
+    
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Instagram media error:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+router.get('/instagram/:businessAccountId/publishing-limits', async (req, res) => {
+  try {
+    const { businessAccountId } = req.params;
+    const { access_token } = req.query;
+    
+    if (!access_token) {
+      return res.status(400).json({
+        error: 'Missing access_token parameter'
+      });
+    }
+    
+    const result = await instagramService.checkPublishingLimits(businessAccountId, access_token);
+    
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Instagram publishing limits error:', error);
     res.status(500).json({
       error: 'Internal server error',
       message: error.message
