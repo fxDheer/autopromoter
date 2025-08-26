@@ -7,10 +7,10 @@ const BACKEND_URL = import.meta.env.PROD
   : 'http://localhost:3001/api';
 
 // Helper function to make API calls to backend
-const callBackendAPI = async (endpoint, data) => {
+const callBackendAPI = async (endpoint, data, method = 'POST') => {
   try {
     const response = await fetch(`${BACKEND_URL}${endpoint}`, {
-        method: 'POST',
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -109,6 +109,42 @@ export const postToInstagram = async (content, apiConfig) => {
         success: false,
       message: `Failed to post to Instagram: ${error.message}`,
       error: error
+    };
+  }
+};
+
+// Get Instagram media
+export const getInstagramMedia = async (businessAccountId, accessToken, limit = 25) => {
+  try {
+    console.log('📸 Getting Instagram media...');
+    
+    const result = await callBackendAPI(`/instagram/${businessAccountId}/media?access_token=${accessToken}&limit=${limit}`, {}, 'GET');
+    
+    console.log('✅ Instagram media retrieved successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ Instagram media retrieval failed:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Check Instagram publishing limits
+export const checkInstagramPublishingLimits = async (businessAccountId, accessToken) => {
+  try {
+    console.log('📸 Checking Instagram publishing limits...');
+    
+    const result = await callBackendAPI(`/instagram/${businessAccountId}/publishing-limits?access_token=${accessToken}`, {}, 'GET');
+    
+    console.log('✅ Instagram publishing limits retrieved successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ Instagram publishing limits check failed:', error);
+    return {
+      success: false,
+      error: error.message
     };
   }
 };

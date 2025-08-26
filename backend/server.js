@@ -16,6 +16,7 @@ const socialMediaRoutes = require('./routes/socialMedia');
 const contentRoutes = require('./routes/content');
 const businessRoutes = require('./routes/business');
 const zapierRoutes = require('./routes/zapier');
+const webhookRoutes = require('./routes/webhooks');
 
 // Middleware
 app.use(helmet()); // Security headers
@@ -34,6 +35,7 @@ app.use('/api/social-media', socialMediaRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/zapier', zapierRoutes);
+app.use('/webhooks', webhookRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
