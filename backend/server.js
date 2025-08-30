@@ -21,12 +21,49 @@ const webhookRoutes = require('./routes/webhooks');
 // Middleware
 app.use(helmet()); // Security headers
 app.use(morgan('combined')); // Logging
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['https://autopromoter-autopromoter.up.railway.app'])
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
-  credentials: true
-}));
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      // Local development
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5173', // Vite default
+      'http://127.0.0.1:5173',
+      
+      // Railway domains
+      'https://autopromoter-autopromoter.up.railway.app',
+      'https://autopromoter-frontend.up.railway.app',
+      'https://autopromoter-backend.up.railway.app',
+      
+      // Vercel domains
+      'https://autopromoter.vercel.app',
+      'https://autopromoter-git-main.vercel.app',
+      
+      // Custom domains from environment
+      ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+    ];
+    
+    console.log('🔒 CORS check - Origin:', origin);
+    console.log('🔒 CORS check - Allowed origins:', allowedOrigins);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('❌ CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

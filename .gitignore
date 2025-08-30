@@ -12,46 +12,60 @@ yarn-error.log*
 .env.production.local
 
 # Build outputs
-dist/
 build/
-*.tgz
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-logs/
-*.log
+dist/
+.next/
+out/
+.vercel/
 
 # Runtime data
-pids/
+pids
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# Coverage directory
 coverage/
+*.lcov
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
 # Temporary folders
 tmp/
 temp/
 
-# Sensitive files
-*ENV*.txt
-*env*.txt
-*.key
-*.pem
-*.p12
-*.pfx
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Large files
-*.zip
-*.tar.gz
-*.rar
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Railway specific
+.railway/
+
+# Vercel specific
+.vercel/

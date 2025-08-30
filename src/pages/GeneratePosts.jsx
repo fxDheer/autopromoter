@@ -484,6 +484,68 @@ const GeneratePosts = () => {
                     <div><strong>Keywords:</strong> {business.keywords}</div>
                   </div>
                   
+                  {/* API Status Display - NEW SECTION */}
+                  <div className="border-t border-white/20 pt-6">
+                    <h4 className="font-semibold text-white mb-4">🔐 API Configuration Status</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {Object.entries(apiConfig).map(([platform, config]) => {
+                        const isConfigured = config?.enabled && 
+                          (platform === 'facebook' ? (config.accessToken && config.pageId) :
+                           platform === 'instagram' ? (config.accessToken && config.businessAccountId) :
+                           platform === 'linkedin' ? (config.accessToken && config.organizationId) :
+                           platform === 'tiktok' ? (config.accessToken && config.businessId) :
+                           platform === 'youtube' ? (config.apiKey && config.channelId) : false);
+                        
+                        const platformIcons = {
+                          facebook: '📘',
+                          instagram: '📸',
+                          linkedin: '💼',
+                          tiktok: '🎵',
+                          youtube: '📺'
+                        };
+                        
+                        const platformColors = {
+                          facebook: 'bg-blue-500/20 border-blue-400/30',
+                          instagram: 'bg-pink-500/20 border-pink-400/30',
+                          linkedin: 'bg-blue-600/20 border-blue-500/30',
+                          tiktok: 'bg-black/20 border-gray-400/30',
+                          youtube: 'bg-red-500/20 border-red-400/30'
+                        };
+                        
+                        return (
+                          <div key={platform} className={`flex items-center space-x-3 p-3 rounded-lg border ${platformColors[platform]} ${isConfigured ? 'border-green-400/50' : 'border-gray-400/30'}`}>
+                            <span className="text-xl">{platformIcons[platform]}</span>
+                            <div className="flex-1">
+                              <div className="font-medium text-white capitalize">{platform}</div>
+                              <div className={`text-xs ${isConfigured ? 'text-green-300' : 'text-gray-400'}`}>
+                                {isConfigured ? '✅ Configured' : '❌ Not configured'}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Summary Status */}
+                    <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-white">
+                          {Object.values(apiConfig).filter(c => c?.enabled && 
+                            (c.platform === 'facebook' ? (c.accessToken && c.pageId) :
+                             c.platform === 'instagram' ? (c.accessToken && c.businessAccountId) :
+                             c.platform === 'linkedin' ? (c.accessToken && c.organizationId) :
+                             c.platform === 'tiktok' ? (c.accessToken && c.businessId) :
+                             c.platform === 'youtube' ? (c.apiKey && c.channelId) : false)).length} / {Object.keys(apiConfig).length} Platforms Ready
+                        </div>
+                        <div className="text-sm text-purple-200">
+                          {Object.values(apiConfig).filter(c => c?.enabled).length > 0 
+                            ? '🚀 Ready for auto-posting!' 
+                            : '⚠️ Configure at least one platform to start auto-posting'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   {/* Connected Social Media Accounts */}
                   {business.socialMedia && (
                     <div className="border-t border-white/20 pt-6">

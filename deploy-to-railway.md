@@ -38,15 +38,15 @@ Your Auto-Promoter backend is now ready for Railway deployment!
 ```env
 NODE_ENV=production
 PORT=3001
-ALLOWED_ORIGINS=https://your-frontend-domain.railway.app
+ALLOWED_ORIGINS=https://autopromoter-frontend.up.railway.app
 
-# Facebook (WORKING CONFIG!)
+# Facebook (YOUR ACCOUNT: Ap Guru / AutopromoterGuru)
 FACEBOOK_APP_ID=1690881632315694
 FACEBOOK_APP_SECRET=42e1ab2b4d01e0de329f7dc8f60c2d44
 FACEBOOK_ACCESS_TOKEN=EAAYB2Q8NKS4BPRtJcppHDvAxfTmuliZAJzQ8GMNHYbawmEtVYjLpD5mqRpQ2zPkV1ZCIgi37xpEIzzBspHHkFsj1DfP3c2BahX
 FACEBOOK_PAGE_ID=762573416941160
 
-# Instagram
+# Instagram (YOUR ACCOUNT: autopromoter9)
 INSTAGRAM_APP_ID=1690881632315694
 INSTAGRAM_APP_SECRET=42e1ab2b4d01e0de329f7dc8f60c2d44
 INSTAGRAM_ACCESS_TOKEN=EAAYB2Q8NKS4BPRtJcppHDvAxfTmuliZAJzQ8GMNHYbawmEtVYjLpD5mqRpQ2zPkV1ZCIgi37xpEIzzBspHHkFsj1DfP3c2BahX
@@ -108,3 +108,25 @@ curl https://your-backend-service.railway.app/api/health
 **Status**: ✅ Ready for Railway deployment
 
 **Just follow the steps above and your Auto-Promoter will be live! 🚀**
+
+---
+
+## **📋 ACCOUNT VERIFICATION CHECKLIST**
+
+### **Facebook Setup:**
+- ✅ **App Name**: `autopromoter`
+- ✅ **Account Name**: `Ap Guru`
+- ✅ **Page Name**: `AutopromoterGuru`
+- ✅ **Page ID**: `762573416941160`
+- ✅ **App ID**: `1690881632315694`
+
+### **Instagram Setup:**
+- ✅ **Account Name**: `autopromoter9`
+- ✅ **Business Account ID**: `17841476820732929`
+- ✅ **Connected to Facebook App**: `autopromoter`
+
+### **Next Steps:**
+1. **Complete Facebook App Review** (if not already done)
+2. **Verify Instagram Business Account** permissions
+3. **Test posting to both platforms**
+4. **Monitor webhook functionality**

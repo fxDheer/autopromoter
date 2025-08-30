@@ -1,0 +1,5 @@
+[33m5d53a98[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add Instagram webhook support for better permissions
+[33m42c26ed[m  Update Instagram API to v23.0 with enhanced features and proper media handling
+[33m18cadb9[m Add Instagram and YouTube testing functionality to frontend
+[33m7236865[m Fix Instagram and YouTube integration with proper API handling and testing
+[33m6489b13[m Added Vercel configuration to fix React Router routing issues

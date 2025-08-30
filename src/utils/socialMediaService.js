@@ -124,11 +124,11 @@ export const getInstagramMedia = async (businessAccountId, accessToken, limit = 
     return result;
   } catch (error) {
     console.error('❌ Instagram media retrieval failed:', error);
-    return {
-      success: false,
-      error: error.message
-    };
-  }
+      return {
+        success: false,
+        error: error.message
+      };
+    }
 };
 
 // Check Instagram publishing limits
@@ -264,12 +264,17 @@ export const postToYouTube = async (content, apiConfig) => {
 // Auto-post to all enabled social media platforms via backend
 export const autoPostToSocialMedia = async (content, apiConfig) => {
   console.log('🚀 Starting auto-post to all enabled platforms via backend...');
+  console.log('🔍 API Config received:', apiConfig);
   
   const results = {};
   const promises = [];
   
+  // Count enabled platforms first
+  const enabledPlatforms = [];
+  
   // Facebook
-  if (apiConfig.facebook?.enabled) {
+  if (apiConfig.facebook?.enabled && apiConfig.facebook?.accessToken && apiConfig.facebook?.pageId) {
+    enabledPlatforms.push('facebook');
     promises.push(
       postToFacebook(content, apiConfig)
         .then(result => { results.facebook = result; })
@@ -278,7 +283,8 @@ export const autoPostToSocialMedia = async (content, apiConfig) => {
   }
   
   // Instagram
-  if (apiConfig.instagram?.enabled) {
+  if (apiConfig.instagram?.enabled && apiConfig.instagram?.accessToken && apiConfig.instagram?.businessAccountId) {
+    enabledPlatforms.push('instagram');
     promises.push(
       postToInstagram(content, apiConfig)
         .then(result => { results.instagram = result; })
@@ -287,7 +293,8 @@ export const autoPostToSocialMedia = async (content, apiConfig) => {
   }
   
   // LinkedIn
-  if (apiConfig.linkedin?.enabled) {
+  if (apiConfig.linkedin?.enabled && apiConfig.linkedin?.accessToken && apiConfig.linkedin?.organizationId) {
+    enabledPlatforms.push('linkedin');
     promises.push(
       postToLinkedIn(content, apiConfig)
         .then(result => { results.linkedin = result; })
@@ -296,7 +303,8 @@ export const autoPostToSocialMedia = async (content, apiConfig) => {
   }
   
   // TikTok
-  if (apiConfig.tiktok?.enabled) {
+  if (apiConfig.tiktok?.enabled && apiConfig.tiktok?.accessToken && apiConfig.tiktok?.businessId) {
+    enabledPlatforms.push('tiktok');
     promises.push(
       postToTikTok(content, apiConfig)
         .then(result => { results.tiktok = result; })
@@ -305,7 +313,8 @@ export const autoPostToSocialMedia = async (content, apiConfig) => {
   }
   
   // YouTube
-  if (apiConfig.youtube?.enabled) {
+  if (apiConfig.youtube?.enabled && apiConfig.youtube?.apiKey && apiConfig.youtube?.channelId) {
+    enabledPlatforms.push('youtube');
     promises.push(
       postToYouTube(content, apiConfig)
         .then(result => { results.youtube = result; })
@@ -313,11 +322,28 @@ export const autoPostToSocialMedia = async (content, apiConfig) => {
     );
   }
   
+  console.log(`🔍 Found ${enabledPlatforms.length} enabled platform(s):`, enabledPlatforms);
+  
+  // If no platforms are enabled, return early with clear message
+  if (enabledPlatforms.length === 0) {
+    console.log('⚠️ No platforms are enabled and properly configured');
+    return {
+      success: false,
+      message: 'No platforms are enabled and properly configured. Please configure at least one platform in the API Configuration.',
+      results: {},
+      summary: {
+        total: 0,
+        successful: 0,
+        failed: 0
+      }
+    };
+  }
+  
   try {
     await Promise.all(promises);
     
     const successCount = Object.values(results).filter(r => r.success).length;
-    const totalCount = Object.keys(results).length;
+    const totalCount = enabledPlatforms.length;
     
     console.log(`✅ Auto-post completed! ${successCount}/${totalCount} platforms successful`);
     
