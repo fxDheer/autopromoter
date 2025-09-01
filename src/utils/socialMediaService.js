@@ -3,7 +3,7 @@
 
 // Backend API URL - use Railway URL in production
 const BACKEND_URL = import.meta.env.PROD 
-  ? 'https://autopromoter-backend.up.railway.app/api'
+  ? 'https://autopromoter-autopromoter.up.railway.app/api'
   : 'http://localhost:3001/api';
 
 // Helper function to make API calls to backend
