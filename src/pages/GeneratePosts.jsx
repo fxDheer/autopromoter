@@ -319,11 +319,25 @@ const GeneratePosts = () => {
       }
     ];
 
-    // Shuffle the posts to get different ones each time
-    const shuffledPosts = [...postTemplates].sort(() => Math.random() - 0.5);
-    
-    // Return first 3 posts with different hashtags each time
-    return shuffledPosts.slice(0, 3).map((post, index) => ({
+    // Separate posts by platform to ensure we get at least one of each
+    const facebookPosts = postTemplates.filter(post => post.platform === 'Facebook');
+    const instagramPosts = postTemplates.filter(post => post.platform === 'Instagram');
+    const linkedinPosts = postTemplates.filter(post => post.platform === 'LinkedIn');
+
+    // Shuffle each platform's posts
+    const shuffledFacebook = [...facebookPosts].sort(() => Math.random() - 0.5);
+    const shuffledInstagram = [...instagramPosts].sort(() => Math.random() - 0.5);
+    const shuffledLinkedIn = [...linkedinPosts].sort(() => Math.random() - 0.5);
+
+    // Ensure we get at least one post from each platform
+    const selectedPosts = [
+      shuffledFacebook[0], // Always get 1 Facebook post
+      shuffledInstagram[0], // Always get 1 Instagram post
+      shuffledLinkedIn[0]  // Always get 1 LinkedIn post
+    ];
+
+    // Add timestamps and IDs
+    return selectedPosts.map((post, index) => ({
       ...post,
       id: `post_${Date.now()}_${index}`,
       createdAt: new Date().toISOString()
