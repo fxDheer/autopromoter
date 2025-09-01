@@ -204,26 +204,7 @@ const GeneratePosts = () => {
       let newPosts = [];
       
       if (contentType === 'text') {
-        newPosts = [
-          {
-            text: "🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. 💡 Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation",
-            platform: "Instagram",
-            type: "text",
-            hashtags: ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"]
-          },
-          {
-            text: "💼 95% of businesses fail because they're not leveraging automation! Our platform helps professionals scale efficiently. Don't let your competition get ahead! ⚡ What's your biggest business challenge? #BusinessScaling #Automation #CompetitiveAdvantage #GrowthStrategy #BusinessTips #Success #Entrepreneurship #DigitalMarketing #BusinessOwners #ScaleUp",
-            platform: "Facebook",
-            type: "text",
-            hashtags: ["BusinessScaling", "Automation", "CompetitiveAdvantage", "GrowthStrategy", "BusinessTips", "Success", "Entrepreneurship", "DigitalMarketing", "BusinessOwners", "ScaleUp"]
-          },
-          {
-            text: "🔥 The future belongs to businesses that adapt quickly! Our cutting-edge solutions give you the edge in today's fast-paced market. Ready to dominate your industry? 🎯 #FutureOfBusiness #Adaptation #MarketLeadership #Innovation #BusinessStrategy #CompetitiveEdge #IndustryDisruption #BusinessGrowth #Leadership #SuccessMindset",
-            platform: "LinkedIn",
-            type: "text",
-            hashtags: ["FutureOfBusiness", "Adaptation", "MarketLeadership", "Innovation", "BusinessStrategy", "CompetitiveEdge", "IndustryDisruption", "BusinessGrowth", "Leadership", "SuccessMindset"]
-          }
-        ];
+        newPosts = generateFreshPosts(business);
       } else if (contentType === 'video') {
         newPosts = [
           {
@@ -285,6 +266,70 @@ const GeneratePosts = () => {
     }
   };
 
+  // Generate fresh posts with different hashtags every time
+  const generateFreshPosts = (businessData) => {
+    const postTemplates = [
+      {
+        text: "🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. 💡 Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation",
+        platform: "Instagram",
+        type: "text",
+        hashtags: ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"]
+      },
+      {
+        text: "💼 95% of businesses fail because they're not leveraging automation! Our platform helps professionals scale efficiently. Don't let your competition get ahead! ⚡ What's your biggest business challenge? #BusinessScaling #Automation #CompetitiveAdvantage #GrowthStrategy #BusinessTips #Success #Entrepreneurship #DigitalMarketing #BusinessOwners #ScaleUp",
+        platform: "Facebook",
+        type: "text",
+        hashtags: ["BusinessScaling", "Automation", "CompetitiveAdvantage", "GrowthStrategy", "BusinessTips", "Success", "Entrepreneurship", "DigitalMarketing", "BusinessOwners", "ScaleUp"]
+      },
+      {
+        text: "🔥 The future belongs to businesses that adapt quickly! Our cutting-edge solutions give you the edge in today's fast-paced market. Ready to dominate your industry? 🎯 #FutureOfBusiness #Adaptation #MarketLeadership #Innovation #BusinessStrategy #CompetitiveEdge #IndustryDisruption #BusinessGrowth #Leadership #SuccessMindset",
+        platform: "LinkedIn",
+        type: "text",
+        hashtags: ["FutureOfBusiness", "Adaptation", "MarketLeadership", "Innovation", "BusinessStrategy", "CompetitiveEdge", "IndustryDisruption", "BusinessGrowth", "Leadership", "SuccessMindset"]
+      },
+      {
+        text: "💡 The secret to business success? Leveraging the right tools at the right time! Our platform helps professionals make smarter decisions and achieve faster results. Ready to unlock your potential? 🚀 #BusinessSuccess #SmartDecisions #FasterResults #BusinessTools #SuccessSecrets #ProfessionalGrowth #BusinessIntelligence #DecisionMaking #ResultsDriven #PotentialUnlocked",
+        platform: "Instagram",
+        type: "text",
+        hashtags: ["BusinessSuccess", "SmartDecisions", "FasterResults", "BusinessTools", "SuccessSecrets", "ProfessionalGrowth", "BusinessIntelligence", "DecisionMaking", "ResultsDriven", "PotentialUnlocked"]
+      },
+      {
+        text: "⚡ Stop wasting time on repetitive tasks! Our automation tools free up 10+ hours weekly. Imagine what you could accomplish with that extra time! 🚀 #TimeFreedom #AutomationTools #ProductivityBoost #WorkLifeBalance #BusinessEfficiency #TimeManagement #Automation #Productivity #BusinessTools #Freedom",
+        platform: "Facebook",
+        type: "text",
+        hashtags: ["TimeFreedom", "AutomationTools", "ProductivityBoost", "WorkLifeBalance", "BusinessEfficiency", "TimeManagement", "Automation", "Productivity", "BusinessTools", "Freedom"]
+      },
+      {
+        text: "🎯 Your competitors are already using advanced tools! Don't get left behind in the digital revolution. Our platform gives you the competitive edge you need to dominate your market. 🔥 #CompetitiveAdvantage #DigitalRevolution #MarketDomination #BusinessTools #StayAhead #Competition #DigitalTransformation #BusinessAdvantage #MarketLeadership #SuccessEdge",
+        platform: "LinkedIn",
+        type: "text",
+        hashtags: ["CompetitiveAdvantage", "DigitalRevolution", "MarketDomination", "BusinessTools", "StayAhead", "Competition", "DigitalTransformation", "BusinessAdvantage", "MarketLeadership", "SuccessEdge"]
+      },
+      {
+        text: "🌟 Transform your business today! Our proven strategies help ambitious professionals achieve 10x results. What's stopping you from taking the next step? 💪 #BusinessTransformation #10XResults #GrowthMindset #SuccessFormula #BusinessStrategy #GoalAchievement #ProfessionalGrowth #BusinessSuccess #AmbitiousProfessionals #NextLevel",
+        platform: "Instagram",
+        type: "text",
+        hashtags: ["BusinessTransformation", "10XResults", "GrowthMindset", "SuccessFormula", "BusinessStrategy", "GoalAchievement", "ProfessionalGrowth", "BusinessSuccess", "AmbitiousProfessionals", "NextLevel"]
+      },
+      {
+        text: "🔥 2024 is the year of business transformation! Companies that embrace automation and AI are seeing 300% growth. Are you ready to join the winners? 💪 #2024Goals #BusinessTransformation #AIGrowth #AutomationSuccess #BusinessWinners #GrowthGoals #AI #BusinessAutomation #Success2024 #WinnersCircle",
+        platform: "Facebook",
+        type: "text",
+        hashtags: ["2024Goals", "BusinessTransformation", "AIGrowth", "AutomationSuccess", "BusinessWinners", "GrowthGoals", "AI", "BusinessAutomation", "Success2024", "WinnersCircle"]
+      }
+    ];
+
+    // Shuffle the posts to get different ones each time
+    const shuffledPosts = [...postTemplates].sort(() => Math.random() - 0.5);
+    
+    // Return first 3 posts with different hashtags each time
+    return shuffledPosts.slice(0, 3).map((post, index) => ({
+      ...post,
+      id: `post_${Date.now()}_${index}`,
+      createdAt: new Date().toISOString()
+    }));
+  };
+
   const handleContentTypeChange = (type) => {
     setContentType(type);
     setTimeout(() => handleGenerateMore(), 100);
@@ -315,26 +360,9 @@ const GeneratePosts = () => {
         });
         }
         
-        setPosts([
-          {
-            text: "🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. 💡 Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation",
-            platform: "Instagram",
-            type: "text",
-            hashtags: ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"]
-          },
-          {
-            text: "💼 95% of businesses fail because they're not leveraging automation! Our platform helps professionals scale efficiently. Don't let your competition get ahead! ⚡ What's your biggest business challenge? #BusinessScaling #Automation #CompetitiveAdvantage #GrowthStrategy #BusinessTips #Success #Entrepreneurship #DigitalMarketing #BusinessOwners #ScaleUp",
-            platform: "Facebook",
-            type: "text",
-            hashtags: ["BusinessScaling", "Automation", "CompetitiveAdvantage", "GrowthStrategy", "BusinessTips", "Success", "Entrepreneurship", "DigitalMarketing", "BusinessOwners", "ScaleUp"]
-          },
-          {
-            text: "🔥 The future belongs to businesses that adapt quickly! Our cutting-edge solutions give you the edge in today's fast-paced market. Ready to dominate your industry? 🎯 #FutureOfBusiness #Adaptation #MarketLeadership #Innovation #BusinessStrategy #CompetitiveEdge #IndustryDisruption #BusinessGrowth #Leadership #SuccessMindset",
-            platform: "LinkedIn",
-            type: "text",
-            hashtags: ["FutureOfBusiness", "Adaptation", "MarketLeadership", "Innovation", "BusinessStrategy", "CompetitiveEdge", "IndustryDisruption", "BusinessGrowth", "Leadership", "SuccessMindset"]
-          }
-        ]);
+        // Generate fresh posts with different hashtags every time
+        const freshPosts = generateFreshPosts(business);
+        setPosts(freshPosts);
       } catch (error) {
         console.error("Error fetching or generating:", error);
         setError("Failed to load business data or generate posts. Please try again.");
