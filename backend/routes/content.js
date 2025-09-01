@@ -7,29 +7,52 @@ const contentService = {
     const posts = [];
     const templates = [
       {
-        text: `🚀 Ready to transform your ${business.industry || 'business'}? Our innovative solutions help ${business.audience || 'professionals'} achieve their goals faster! 💡 #${business.keywords?.split(',')[0] || 'BusinessGrowth'} #Innovation #Success`,
+        text: `🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. 💡 Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation`,
         platform: "Instagram",
-        type: "text"
+        type: "text",
+        hashtags: ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"]
       },
       {
-        text: `💼 Looking for ways to boost your productivity? Discover how our tools can streamline your workflow and save you hours every week! ⚡ #Productivity #Efficiency #WorkSmart`,
+        text: `💼 95% of businesses fail because they're not leveraging automation! Our platform helps ${business.audience || 'professionals'} scale efficiently. Don't let your competition get ahead! ⚡ What's your biggest business challenge? #BusinessScaling #Automation #CompetitiveAdvantage #GrowthStrategy #BusinessTips #Success #Entrepreneurship #DigitalMarketing #BusinessOwners #ScaleUp`,
         platform: "Facebook",
-        type: "text"
+        type: "text",
+        hashtags: ["BusinessScaling", "Automation", "CompetitiveAdvantage", "GrowthStrategy", "BusinessTips", "Success", "Entrepreneurship", "DigitalMarketing", "BusinessOwners", "ScaleUp"]
       },
       {
-        text: `🔥 Don't let your competition get ahead! Our cutting-edge platform gives you the edge you need to succeed in today's fast-paced market. 🎯 #CompetitiveAdvantage #Success #Growth`,
+        text: `🔥 The future belongs to businesses that adapt quickly! Our cutting-edge solutions give you the edge in today's fast-paced market. Ready to dominate your industry? 🎯 #FutureOfBusiness #Adaptation #MarketLeadership #Innovation #BusinessStrategy #CompetitiveEdge #IndustryDisruption #BusinessGrowth #Leadership #SuccessMindset`,
         platform: "LinkedIn",
-        type: "text"
+        type: "text",
+        hashtags: ["FutureOfBusiness", "Adaptation", "MarketLeadership", "Innovation", "BusinessStrategy", "CompetitiveEdge", "IndustryDisruption", "BusinessGrowth", "Leadership", "SuccessMindset"]
       },
       {
-        text: `🌟 Transform your ${business.industry || 'business'} today! Our cutting-edge solutions are designed specifically for ${business.audience || 'ambitious professionals'} like you. Ready to take the next step? 💪 #${business.keywords?.split(',')[0] || 'BusinessTransformation'} #Growth #Innovation`,
+        text: `🌟 Transform your ${business.industry || 'business'} today! Our proven strategies help ${business.audience || 'ambitious professionals'} achieve 10x results. What's stopping you from taking the next step? 💪 #BusinessTransformation #10XResults #GrowthMindset #SuccessFormula #BusinessStrategy #GoalAchievement #ProfessionalGrowth #BusinessSuccess #AmbitiousProfessionals #NextLevel`,
         platform: "Instagram",
-        type: "text"
+        type: "text",
+        hashtags: ["BusinessTransformation", "10XResults", "GrowthMindset", "SuccessFormula", "BusinessStrategy", "GoalAchievement", "ProfessionalGrowth", "BusinessSuccess", "AmbitiousProfessionals", "NextLevel"]
       },
       {
-        text: `⚡ Stop wasting time on manual tasks! Our automation tools can save you 10+ hours per week. Imagine what you could accomplish with that extra time! 🚀 #Automation #Productivity #TimeManagement`,
+        text: `⚡ Stop wasting time on repetitive tasks! Our automation tools free up 10+ hours weekly. Imagine what you could accomplish with that extra time! 🚀 #TimeFreedom #AutomationTools #ProductivityBoost #WorkLifeBalance #BusinessEfficiency #TimeManagement #Automation #Productivity #BusinessTools #Freedom`,
         platform: "Facebook",
-        type: "text"
+        type: "text",
+        hashtags: ["TimeFreedom", "AutomationTools", "ProductivityBoost", "WorkLifeBalance", "BusinessEfficiency", "TimeManagement", "Automation", "Productivity", "BusinessTools", "Freedom"]
+      },
+      {
+        text: `🎯 Your competitors are already using advanced tools! Don't get left behind in the digital revolution. Our platform gives you the competitive edge you need to dominate your market. 🔥 #CompetitiveAdvantage #DigitalRevolution #MarketDomination #BusinessTools #StayAhead #Competition #DigitalTransformation #BusinessAdvantage #MarketLeadership #SuccessEdge`,
+        platform: "LinkedIn",
+        type: "text",
+        hashtags: ["CompetitiveAdvantage", "DigitalRevolution", "MarketDomination", "BusinessTools", "StayAhead", "Competition", "DigitalTransformation", "BusinessAdvantage", "MarketLeadership", "SuccessEdge"]
+      },
+      {
+        text: `💡 The secret to business success? Leveraging the right tools at the right time! Our platform helps ${business.audience || 'professionals'} make smarter decisions and achieve faster results. Ready to unlock your potential? 🚀 #BusinessSuccess #SmartDecisions #FasterResults #BusinessTools #SuccessSecrets #ProfessionalGrowth #BusinessIntelligence #DecisionMaking #ResultsDriven #PotentialUnlocked`,
+        platform: "Instagram",
+        type: "text",
+        hashtags: ["BusinessSuccess", "SmartDecisions", "FasterResults", "BusinessTools", "SuccessSecrets", "ProfessionalGrowth", "BusinessIntelligence", "DecisionMaking", "ResultsDriven", "PotentialUnlocked"]
+      },
+      {
+        text: `🔥 2024 is the year of business transformation! Companies that embrace automation and AI are seeing 300% growth. Are you ready to join the winners? 💪 #2024Goals #BusinessTransformation #AIGrowth #AutomationSuccess #BusinessWinners #GrowthGoals #AI #BusinessAutomation #Success2024 #WinnersCircle`,
+        platform: "Facebook",
+        type: "text",
+        hashtags: ["2024Goals", "BusinessTransformation", "AIGrowth", "AutomationSuccess", "BusinessWinners", "GrowthGoals", "AI", "BusinessAutomation", "Success2024", "WinnersCircle"]
       }
     ];
 
