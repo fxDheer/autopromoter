@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ApiConfigModal from "../components/ApiConfigModal";
 import AILearningDashboard from "../components/AILearningDashboard";
-import { autoPostToSocialMedia, validateApiKeys } from "../utils/socialMediaService";
+import { autoPostToSocialMediaWithPlatformPosts, validateApiKeys } from "../utils/socialMediaService";
 import autoLearningService from "../utils/autoLearningService";
 import { loadEnvironmentVariables, convertToApiConfig } from "../utils/envLoader";
 
