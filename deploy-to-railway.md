@@ -50,7 +50,7 @@ FACEBOOK_PAGE_ID=762573416941160
 INSTAGRAM_APP_ID=1690881632315694
 INSTAGRAM_APP_SECRET=42e1ab2b4d01e0de329f7dc8f60c2d44
 INSTAGRAM_ACCESS_TOKEN=EAAYB2Q8NKS4BPRtJcppHDvAxfTmuliZAJzQ8GMNHYbawmEtVYjLpD5mqRpQ2zPkV1ZCIgi37xpEIzzBspHHkFsj1DfP3c2BahX
-INSTAGRAM_BUSINESS_ACCOUNT_ID=17841476820732929
+INSTAGRAM_BUSINESS_ACCOUNT_ID=17841477101741686
 
 # YouTube
 YOUTUBE_API_KEY=AIzaSyB06e-L3DSoXpR-hgkMr2S-YVIinNzU7Hc
@@ -92,6 +92,7 @@ curl https://your-backend-service.railway.app/api/health
 - Create another service
 - Root Directory: `.` (root)
 - Build Command: `npm run build`
+
 - Start Command: `npm run preview`
 
 ### **Option B: Vercel (Recommended)**
