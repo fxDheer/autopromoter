@@ -3,7 +3,7 @@
 
 // Backend API URL - use Railway URL in production
 const BACKEND_URL = import.meta.env.PROD 
-  ? 'https://autopromoter-autopromoter.up.railway.app/api'
+  ? 'https://autopromoter-backend.up.railway.app/api'
   : 'http://localhost:3001/api';
 
 // Helper function to make API calls to backend
@@ -261,7 +261,119 @@ export const postToYouTube = async (content, apiConfig) => {
   }
 };
 
-// Auto-post to all enabled social media platforms via backend
+// Auto-post to all enabled social media platforms via backend with platform-specific posts
+export const autoPostToSocialMediaWithPlatformPosts = async (posts, apiConfig) => {
+  console.log('🚀 Starting auto-post to all enabled platforms via backend...');
+  console.log('🔍 API Config received:', apiConfig);
+  console.log('📝 Posts to send:', posts);
+  
+  const results = {};
+  const promises = [];
+  
+  // Count enabled platforms first
+  const enabledPlatforms = [];
+  
+  // Find the correct post for each platform
+  const facebookPost = posts.find(post => post.platform === 'Facebook') || posts[0];
+  const instagramPost = posts.find(post => post.platform === 'Instagram') || posts[0];
+  const linkedinPost = posts.find(post => post.platform === 'LinkedIn') || posts[0];
+  
+  // Facebook
+  if (apiConfig.facebook?.enabled && apiConfig.facebook?.accessToken && apiConfig.facebook?.pageId) {
+    enabledPlatforms.push('facebook');
+    promises.push(
+      postToFacebook(facebookPost, apiConfig)
+        .then(result => { results.facebook = result; })
+        .catch(error => { results.facebook = { success: false, error: error.message }; })
+    );
+  }
+  
+  // Instagram
+  if (apiConfig.instagram?.enabled && apiConfig.instagram?.accessToken && apiConfig.instagram?.businessAccountId) {
+    enabledPlatforms.push('instagram');
+    promises.push(
+      postToInstagram(instagramPost, apiConfig)
+        .then(result => { results.instagram = result; })
+        .catch(error => { results.instagram = { success: false, error: error.message }; })
+    );
+  }
+  
+  // LinkedIn
+  if (apiConfig.linkedin?.enabled && apiConfig.linkedin?.accessToken && apiConfig.linkedin?.organizationId) {
+    enabledPlatforms.push('linkedin');
+    promises.push(
+      postToLinkedIn(linkedinPost, apiConfig)
+        .then(result => { results.linkedin = result; })
+        .catch(error => { results.linkedin = { success: false, error: error.message }; })
+    );
+  }
+  
+  // TikTok
+  if (apiConfig.tiktok?.enabled && apiConfig.tiktok?.accessToken && apiConfig.tiktok?.businessId) {
+    enabledPlatforms.push('tiktok');
+    promises.push(
+      postToTikTok(posts[0], apiConfig)
+        .then(result => { results.tiktok = result; })
+        .catch(error => { results.tiktok = { success: false, error: error.message }; })
+    );
+  }
+  
+  // YouTube
+  if (apiConfig.youtube?.enabled && apiConfig.youtube?.apiKey && apiConfig.youtube?.channelId) {
+    enabledPlatforms.push('youtube');
+    promises.push(
+      postToYouTube(posts[0], apiConfig)
+        .then(result => { results.youtube = result; })
+        .catch(error => { results.youtube = { success: false, error: error.message }; })
+    );
+  }
+  
+  console.log(`🔍 Found ${enabledPlatforms.length} enabled platform(s):`, enabledPlatforms);
+  
+  if (enabledPlatforms.length === 0) {
+    return {
+      success: false,
+      message: 'No platforms are enabled and properly configured',
+      results: {},
+      summary: {
+        total: 0,
+        successful: 0,
+        failed: 0
+      }
+    };
+  }
+  
+  // Wait for all posts to complete
+  try {
+    await Promise.all(promises);
+    
+    const successCount = Object.values(results).filter(r => r.success).length;
+    const totalCount = enabledPlatforms.length;
+    
+    console.log(`✅ Auto-post completed! ${successCount}/${totalCount} platforms successful`);
+    
+    return {
+      success: successCount > 0,
+      message: `Auto-post completed! ${successCount}/${totalCount} platforms successful`,
+      results: results,
+      summary: {
+        total: totalCount,
+        successful: successCount,
+        failed: totalCount - successCount
+      }
+    };
+  } catch (error) {
+    console.error('❌ Auto-post failed:', error);
+    return {
+      success: false,
+      message: `Auto-post failed: ${error.message}`,
+      error: error,
+      results: results
+    };
+  }
+};
+
+// Auto-post to all enabled social media platforms via backend (legacy function for backward compatibility)
 export const autoPostToSocialMedia = async (content, apiConfig) => {
   console.log('🚀 Starting auto-post to all enabled platforms via backend...');
   console.log('🔍 API Config received:', apiConfig);
@@ -324,12 +436,10 @@ export const autoPostToSocialMedia = async (content, apiConfig) => {
   
   console.log(`🔍 Found ${enabledPlatforms.length} enabled platform(s):`, enabledPlatforms);
   
-  // If no platforms are enabled, return early with clear message
   if (enabledPlatforms.length === 0) {
-    console.log('⚠️ No platforms are enabled and properly configured');
     return {
       success: false,
-      message: 'No platforms are enabled and properly configured. Please configure at least one platform in the API Configuration.',
+      message: 'No platforms are enabled and properly configured',
       results: {},
       summary: {
         total: 0,
@@ -339,6 +449,7 @@ export const autoPostToSocialMedia = async (content, apiConfig) => {
     };
   }
   
+  // Wait for all posts to complete
   try {
     await Promise.all(promises);
     

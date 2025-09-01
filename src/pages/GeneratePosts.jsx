@@ -43,8 +43,8 @@ const GeneratePosts = () => {
     setAutoPostResults([]);
     
     try {
-      // Use the new backend-connected service
-      const result = await autoPostToSocialMedia(posts[0], apiConfig);
+      // Use the new backend-connected service with platform-specific posts
+      const result = await autoPostToSocialMediaWithPlatformPosts(posts, apiConfig);
       
       if (result.success) {
         setPostingStatus(`✅ Auto-post successful! ${result.summary.successful}/${result.summary.total} platforms`);
