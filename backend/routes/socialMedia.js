@@ -108,6 +108,9 @@ const instagramService = {
         mediaType = 'STORIES';
       } else if (content.type === 'carousel') {
         mediaType = 'CAROUSEL';
+      } else if (!content.imageUrl && !content.videoUrl && content.text) {
+        // For text-only posts, we need to use a default image or handle differently
+        mediaType = 'IMAGE';
       }
 
       console.log('📸 Instagram: Media type determined:', mediaType);
@@ -127,6 +130,9 @@ const instagramService = {
         mediaData.image_url = content.imageUrl;
       } else if (content.videoUrl) {
         mediaData.video_url = content.videoUrl;
+      } else if (content.text && !content.imageUrl && !content.videoUrl) {
+        // For text-only posts, use a simple default image
+        mediaData.image_url = 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1080&h=1080&fit=crop&crop=center';
       }
 
       // Add caption if provided
