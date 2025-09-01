@@ -317,19 +317,22 @@ const GeneratePosts = () => {
         
         setPosts([
           {
-            text: "🚀 Ready to transform your business? Our innovative solutions help young professionals achieve their goals faster! 💡 #BusinessGrowth #Innovation #Success",
+            text: "🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. 💡 Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation",
             platform: "Instagram",
-            type: "text"
+            type: "text",
+            hashtags: ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"]
           },
           {
-            text: "💼 Looking for ways to boost your productivity? Discover how our tools can streamline your workflow and save you hours every week! ⚡ #Productivity #Efficiency #WorkSmart",
+            text: "💼 95% of businesses fail because they're not leveraging automation! Our platform helps professionals scale efficiently. Don't let your competition get ahead! ⚡ What's your biggest business challenge? #BusinessScaling #Automation #CompetitiveAdvantage #GrowthStrategy #BusinessTips #Success #Entrepreneurship #DigitalMarketing #BusinessOwners #ScaleUp",
             platform: "Facebook",
-            type: "text"
+            type: "text",
+            hashtags: ["BusinessScaling", "Automation", "CompetitiveAdvantage", "GrowthStrategy", "BusinessTips", "Success", "Entrepreneurship", "DigitalMarketing", "BusinessOwners", "ScaleUp"]
           },
           {
-            text: "🔥 Don't let your competition get ahead! Our cutting-edge platform gives you the edge you need to succeed in today's fast-paced market. 🎯 #CompetitiveAdvantage #Success #Growth",
+            text: "🔥 The future belongs to businesses that adapt quickly! Our cutting-edge solutions give you the edge in today's fast-paced market. Ready to dominate your industry? 🎯 #FutureOfBusiness #Adaptation #MarketLeadership #Innovation #BusinessStrategy #CompetitiveEdge #IndustryDisruption #BusinessGrowth #Leadership #SuccessMindset",
             platform: "LinkedIn",
-            type: "text"
+            type: "text",
+            hashtags: ["FutureOfBusiness", "Adaptation", "MarketLeadership", "Innovation", "BusinessStrategy", "CompetitiveEdge", "IndustryDisruption", "BusinessGrowth", "Leadership", "SuccessMindset"]
           }
         ]);
       } catch (error) {
