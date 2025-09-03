@@ -300,6 +300,24 @@ const GeneratePosts = () => {
         hashtags: ["TimeFreedom", "AutomationTools", "ProductivityBoost", "WorkLifeBalance", "BusinessEfficiency", "TimeManagement", "Automation", "Productivity", "BusinessTools", "Freedom"]
       },
       {
+        text: "🎥 Ready to scale your business with video content? Our automation platform helps you create, schedule, and optimize your video marketing strategy! 📈 What's your biggest video marketing challenge? #VideoMarketing #ContentAutomation #BusinessGrowth #VideoStrategy #MarketingAutomation #ContentCreation #BusinessScaling #VideoContent #MarketingTools #BusinessSuccess",
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["VideoMarketing", "ContentAutomation", "BusinessGrowth", "VideoStrategy", "MarketingAutomation", "ContentCreation", "BusinessScaling", "VideoContent", "MarketingTools", "BusinessSuccess"]
+      },
+      {
+        text: "🚀 Transform your business with the power of automation! Our platform helps entrepreneurs save 10+ hours weekly and scale faster. Ready to join thousands of successful businesses? 💪 #BusinessAutomation #TimeSaving #BusinessGrowth #AutomationTools #Entrepreneurship #BusinessSuccess #Productivity #ScaleUp #BusinessTools #SuccessStories",
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["BusinessAutomation", "TimeSaving", "BusinessGrowth", "AutomationTools", "Entrepreneurship", "BusinessSuccess", "Productivity", "ScaleUp", "BusinessTools", "SuccessStories"]
+      },
+      {
+        text: "⚡ Stop working harder, start working smarter! Our AI-powered solutions automate your repetitive tasks so you can focus on what matters most - growing your business! 🎯 #WorkSmarter #AIAutomation #BusinessFocus #GrowthStrategy #ProductivityHacks #BusinessAutomation #SmartWork #BusinessGrowth #AITools #Efficiency",
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["WorkSmarter", "AIAutomation", "BusinessFocus", "GrowthStrategy", "ProductivityHacks", "BusinessAutomation", "SmartWork", "BusinessGrowth", "AITools", "Efficiency"]
+      },
+      {
         text: "🎯 Your competitors are already using advanced tools! Don't get left behind in the digital revolution. Our platform gives you the competitive edge you need to dominate your market. 🔥 #CompetitiveAdvantage #DigitalRevolution #MarketDomination #BusinessTools #StayAhead #Competition #DigitalTransformation #BusinessAdvantage #MarketLeadership #SuccessEdge",
         platform: "LinkedIn",
         type: "text",
@@ -323,17 +341,20 @@ const GeneratePosts = () => {
     const facebookPosts = postTemplates.filter(post => post.platform === 'Facebook');
     const instagramPosts = postTemplates.filter(post => post.platform === 'Instagram');
     const linkedinPosts = postTemplates.filter(post => post.platform === 'LinkedIn');
+    const youtubePosts = postTemplates.filter(post => post.platform === 'YouTube');
 
     // Shuffle each platform's posts
     const shuffledFacebook = [...facebookPosts].sort(() => Math.random() - 0.5);
     const shuffledInstagram = [...instagramPosts].sort(() => Math.random() - 0.5);
     const shuffledLinkedIn = [...linkedinPosts].sort(() => Math.random() - 0.5);
+    const shuffledYouTube = [...youtubePosts].sort(() => Math.random() - 0.5);
 
     // Ensure we get at least one post from each platform
     const selectedPosts = [
       shuffledFacebook[0], // Always get 1 Facebook post
       shuffledInstagram[0], // Always get 1 Instagram post
-      shuffledLinkedIn[0]  // Always get 1 LinkedIn post
+      shuffledLinkedIn[0], // Always get 1 LinkedIn post
+      shuffledYouTube[0]   // Always get 1 YouTube post
     ];
 
     // Add timestamps and IDs

@@ -247,17 +247,22 @@ const instagramService = {
 const youtubeService = {
   async createPost(content, apiKey, channelId) {
     try {
-      console.log('📺 YouTube: Creating post for channel:', channelId);
+      console.log('📺 YouTube: Creating community post for channel:', channelId);
       
-      // YouTube doesn't have a direct "post" API like social media
-      // This would typically create a community post or update channel description
+      // For YouTube, we'll create a community post (text post)
+      // This requires OAuth 2.0 authentication, not just API key
       // For now, we'll return a success message indicating the content is ready
       
       return {
         success: true,
         platform: 'YouTube',
-        message: 'YouTube content prepared (community post feature not yet implemented)',
-        data: { channelId, content: content.text }
+        message: 'YouTube community post prepared (OAuth authentication required for posting)',
+        data: { 
+          channelId, 
+          content: content.text,
+          type: 'community_post',
+          note: 'YouTube community posts require OAuth 2.0 authentication. Please configure OAuth credentials.'
+        }
       };
     } catch (error) {
       console.error('❌ YouTube posting error:', error.message);
@@ -271,19 +276,87 @@ const youtubeService = {
 
   async uploadVideo(content, apiKey, channelId) {
     try {
-      console.log('📺 YouTube: Uploading video for channel:', channelId);
+      console.log('📺 YouTube: Preparing video upload for channel:', channelId);
       
-      // This would implement actual video upload to YouTube
-      // For now, return a success message
+      // YouTube video upload requires OAuth 2.0 authentication
+      // We'll prepare the video metadata and return instructions
       
+      if (!content.videoUrl && !content.videoFile) {
+        return {
+          success: false,
+          platform: 'YouTube',
+          error: 'Video URL or video file is required for YouTube upload'
+        };
+      }
+
+      const videoMetadata = {
+        snippet: {
+          title: content.title || content.text?.substring(0, 100) || 'AutoPromoter Video',
+          description: content.text || 'Created with AutoPromoter',
+          tags: content.tags || content.hashtags || ['autopromoter', 'automation'],
+          categoryId: '22' // People & Blogs category
+        },
+        status: {
+          privacyStatus: content.privacyStatus || 'public' // public, private, unlisted
+        }
+      };
+
       return {
         success: true,
         platform: 'YouTube',
-        message: 'YouTube video upload prepared (upload feature not yet implemented)',
-        data: { channelId, content: content.text }
+        message: 'YouTube video upload prepared (OAuth authentication required)',
+        data: { 
+          channelId, 
+          videoMetadata,
+          videoUrl: content.videoUrl,
+          note: 'YouTube video upload requires OAuth 2.0 authentication. Please configure OAuth credentials.'
+        }
       };
     } catch (error) {
       console.error('❌ YouTube video upload error:', error.message);
+      return {
+        success: false,
+        platform: 'YouTube',
+        error: error.message
+      };
+    }
+  },
+
+  async getChannelInfo(apiKey, channelId) {
+    try {
+      console.log('📺 YouTube: Getting channel info for:', channelId);
+      
+      const { google } = require('googleapis');
+      const youtube = google.youtube({ version: 'v3', auth: apiKey });
+      
+      const response = await youtube.channels.list({
+        part: 'snippet,statistics',
+        id: channelId
+      });
+
+      if (response.data.items && response.data.items.length > 0) {
+        const channel = response.data.items[0];
+        return {
+          success: true,
+          platform: 'YouTube',
+          data: {
+            channelId: channel.id,
+            title: channel.snippet.title,
+            description: channel.snippet.description,
+            subscriberCount: channel.statistics.subscriberCount,
+            videoCount: channel.statistics.videoCount,
+            viewCount: channel.statistics.viewCount
+          }
+        };
+      } else {
+        return {
+          success: false,
+          platform: 'YouTube',
+          error: 'Channel not found or API key invalid'
+        };
+      }
+    } catch (error) {
+      console.error('❌ YouTube channel info error:', error.message);
       return {
         success: false,
         platform: 'YouTube',
@@ -607,45 +680,30 @@ router.post('/test-instagram-youtube', async (req, res) => {
     if (youtube && youtube.enabled) {
       try {
         console.log('📺 Testing YouTube API...');
-        const ytResponse = await axios.get(
-          `https://www.googleapis.com/youtube/v3/channels`,
-          {
-            params: {
-              part: 'snippet,statistics',
-              id: youtube.channelId,
-              key: youtube.apiKey
-            }
-          }
+        
+        const result = await youtubeService.getChannelInfo(
+          youtube.apiKey, 
+          youtube.channelId
         );
-        
-        if (ytResponse.data.error) {
-          throw new Error(ytResponse.data.error.message);
-        }
-        
-        if (ytResponse.data.items && ytResponse.data.items.length > 0) {
-          const channel = ytResponse.data.items[0];
+
+        if (result.success) {
           testResults.push({
             platform: 'youtube',
             status: 'connected',
-            data: {
-              id: channel.id,
-              title: channel.snippet.title,
-              subscriberCount: channel.statistics.subscriberCount,
-              videoCount: channel.statistics.videoCount
-            },
+            data: result.data,
             message: 'YouTube API connection successful'
           });
           
-          console.log('📺 YouTube test successful:', channel.snippet.title);
+          console.log('📺 YouTube test successful:', result.data.title);
         } else {
-          throw new Error('Channel not found');
+          throw new Error(result.error);
         }
       } catch (error) {
-        console.error('❌ YouTube test failed:', error.response?.data || error.message);
+        console.error('❌ YouTube test failed:', error.message);
         testResults.push({
           platform: 'youtube',
           status: 'error',
-          error: error.response?.data?.error?.message || error.message,
+          error: error.message,
           message: 'YouTube API connection failed'
         });
       }

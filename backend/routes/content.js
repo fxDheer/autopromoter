@@ -49,6 +49,24 @@ const contentService = {
         hashtags: ["BusinessSuccess", "SmartDecisions", "FasterResults", "BusinessTools", "SuccessSecrets", "ProfessionalGrowth", "BusinessIntelligence", "DecisionMaking", "ResultsDriven", "PotentialUnlocked"]
       },
       {
+        text: `🎥 Ready to scale your ${business.industry || 'business'} with video content? Our automation platform helps you create, schedule, and optimize your video marketing strategy! 📈 What's your biggest video marketing challenge? #VideoMarketing #ContentAutomation #BusinessGrowth #VideoStrategy #MarketingAutomation #ContentCreation #BusinessScaling #VideoContent #MarketingTools #BusinessSuccess`,
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["VideoMarketing", "ContentAutomation", "BusinessGrowth", "VideoStrategy", "MarketingAutomation", "ContentCreation", "BusinessScaling", "VideoContent", "MarketingTools", "BusinessSuccess"]
+      },
+      {
+        text: `🚀 Transform your business with the power of automation! Our platform helps ${business.audience || 'entrepreneurs'} save 10+ hours weekly and scale faster. Ready to join thousands of successful businesses? 💪 #BusinessAutomation #TimeSaving #BusinessGrowth #AutomationTools #Entrepreneurship #BusinessSuccess #Productivity #ScaleUp #BusinessTools #SuccessStories`,
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["BusinessAutomation", "TimeSaving", "BusinessGrowth", "AutomationTools", "Entrepreneurship", "BusinessSuccess", "Productivity", "ScaleUp", "BusinessTools", "SuccessStories"]
+      },
+      {
+        text: `⚡ Stop working harder, start working smarter! Our AI-powered solutions automate your repetitive tasks so you can focus on what matters most - growing your business! 🎯 #WorkSmarter #AIAutomation #BusinessFocus #GrowthStrategy #ProductivityHacks #BusinessAutomation #SmartWork #BusinessGrowth #AITools #Efficiency`,
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["WorkSmarter", "AIAutomation", "BusinessFocus", "GrowthStrategy", "ProductivityHacks", "BusinessAutomation", "SmartWork", "BusinessGrowth", "AITools", "Efficiency"]
+      },
+      {
         text: `🔥 2024 is the year of business transformation! Companies that embrace automation and AI are seeing 300% growth. Are you ready to join the winners? 💪 #2024Goals #BusinessTransformation #AIGrowth #AutomationSuccess #BusinessWinners #GrowthGoals #AI #BusinessAutomation #Success2024 #WinnersCircle`,
         platform: "Facebook",
         type: "text",
