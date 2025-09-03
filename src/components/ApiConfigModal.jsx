@@ -206,35 +206,52 @@ Example URL: https://localhost:3000/auth/youtube/callback?code=4/0AX4XfWh...very
 Click OK to proceed with authentication.`);
 
         if (proceed) {
-          // Open OAuth URL in new tab
-          window.open(result.authUrl, '_blank');
+          // Show instructions first
+          const showInstructions = confirm(`🔐 YouTube OAuth Authentication
+
+IMPORTANT: Authorization codes expire in 10 minutes!
+
+Steps:
+1. Click OK to open YouTube OAuth in new tab
+2. Complete authentication quickly
+3. Copy the authorization code from URL
+4. Paste it immediately when prompted
+
+⚠️ HURRY! Codes expire very quickly!
+
+Click OK to start authentication:`);
           
-          // Prompt for authorization code with better instructions
-          const authCode = prompt(`🔐 YouTube OAuth Authentication
+          if (showInstructions) {
+            // Open OAuth URL in new tab
+            window.open(result.authUrl, '_blank');
+            
+            // Wait a moment then prompt for code
+            setTimeout(() => {
+              const authCode = prompt(`🔐 YouTube Authorization Code
 
-IMPORTANT: You have 10 minutes to complete this!
+URGENT: Paste your authorization code NOW!
 
-Please follow these steps:
+1. Look at the new tab that opened
+2. Complete authentication if not done
+3. Find "code=" in the URL
+4. Copy everything after "code=" until "&"
+5. Paste here IMMEDIATELY
 
-1. Complete authentication in the new tab that just opened
-2. After authentication, you'll see a page with an error (this is normal)
-3. Look at the URL bar - find the part that says "code="
-4. Copy everything after "code=" until the next "&" symbol
-5. Paste the code here IMMEDIATELY (codes expire in 10 minutes)
-
-Example: If URL shows "code=4/0AX4XfWh...very-long-code...&scope=..."
+Example: code=4/0AX4XfWh...very-long-code...&scope=...
 Copy: 4/0AX4XfWh...very-long-code...
 
-⚠️ HURRY! Authorization codes expire quickly!
+⚠️ PASTE NOW - Codes expire in minutes!
 
-Paste your authorization code here:`);
-          
-          if (authCode && authCode.trim()) {
-            // Immediately process the code
-            console.log('🔐 Processing authorization code immediately...');
-            handleYouTubeCallback(authCode.trim());
-          } else {
-            alert('❌ No authorization code provided. Please try again.');
+Authorization code:`);
+              
+              if (authCode && authCode.trim()) {
+                // Process immediately
+                console.log('🔐 Processing authorization code immediately...');
+                handleYouTubeCallback(authCode.trim());
+              } else {
+                alert('❌ No authorization code provided. Please try the authentication process again.');
+              }
+            }, 2000); // Wait 2 seconds for user to see the tab
           }
         }
       } else {
@@ -495,6 +512,31 @@ Paste your authorization code here:`);
                     >
                       <span>🔐</span>
                       <span>Authenticate with YouTube</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        const manualCode = prompt(`🔐 Manual YouTube Authentication
+
+If OAuth keeps failing, you can manually enter an authorization code:
+
+1. Go to: https://developers.google.com/oauthplayground/
+2. Select "YouTube Data API v3"
+3. Select scopes: youtube.upload, youtube, youtube.force-ssl
+4. Click "Authorize APIs"
+5. Complete authentication
+6. Click "Exchange authorization code for tokens"
+7. Copy the authorization code from Step 1
+8. Paste it here
+
+Authorization code:`);
+                        if (manualCode && manualCode.trim()) {
+                          handleYouTubeCallback(manualCode.trim());
+                        }
+                      }}
+                      className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 text-white px-6 py-3 rounded-xl hover:from-orange-700 hover:to-yellow-700 transition-all duration-300 font-semibold flex items-center justify-center space-x-2 mt-2"
+                    >
+                      <span>🔧</span>
+                      <span>Manual Authentication</span>
                     </button>
                     {config[platform].accessToken && (
                       <p className="text-sm text-green-600 mt-2 text-center">
