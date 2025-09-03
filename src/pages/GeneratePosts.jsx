@@ -337,32 +337,85 @@ const GeneratePosts = () => {
       }
     ];
 
+    // Better randomization using Fisher-Yates shuffle algorithm
+    const shuffleArray = (array) => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+
+    // Get recently used posts to avoid immediate repetition
+    const getRecentlyUsedPosts = () => {
+      try {
+        const recent = localStorage.getItem('autopromoter_recent_posts');
+        return recent ? JSON.parse(recent) : [];
+      } catch (error) {
+        console.error('Error loading recent posts:', error);
+        return [];
+      }
+    };
+
+    // Save recently used posts
+    const saveRecentlyUsedPosts = (postIds) => {
+      try {
+        localStorage.setItem('autopromoter_recent_posts', JSON.stringify(postIds));
+      } catch (error) {
+        console.error('Error saving recent posts:', error);
+      }
+    };
+
+    // Get recently used posts to avoid repetition
+    const recentlyUsed = getRecentlyUsedPosts();
+    
     // Separate posts by platform to ensure we get at least one of each
     const facebookPosts = postTemplates.filter(post => post.platform === 'Facebook');
     const instagramPosts = postTemplates.filter(post => post.platform === 'Instagram');
     const linkedinPosts = postTemplates.filter(post => post.platform === 'LinkedIn');
     const youtubePosts = postTemplates.filter(post => post.platform === 'YouTube');
 
-    // Shuffle each platform's posts
-    const shuffledFacebook = [...facebookPosts].sort(() => Math.random() - 0.5);
-    const shuffledInstagram = [...instagramPosts].sort(() => Math.random() - 0.5);
-    const shuffledLinkedIn = [...linkedinPosts].sort(() => Math.random() - 0.5);
-    const shuffledYouTube = [...youtubePosts].sort(() => Math.random() - 0.5);
+    // Function to select a post that hasn't been used recently
+    const selectFreshPost = (posts, platform) => {
+      // Filter out recently used posts for this platform
+      const availablePosts = posts.filter(post => {
+        const postKey = `${platform}_${post.text.substring(0, 50)}`;
+        return !recentlyUsed.includes(postKey);
+      });
+      
+      // If all posts have been used recently, use all posts
+      const postsToChooseFrom = availablePosts.length > 0 ? availablePosts : posts;
+      
+      // Shuffle and select the first one
+      const shuffled = shuffleArray(postsToChooseFrom);
+      return shuffled[0];
+    };
 
-    // Ensure we get at least one post from each platform
+    // Select fresh posts for each platform
     const selectedPosts = [
-      shuffledFacebook[0], // Always get 1 Facebook post
-      shuffledInstagram[0], // Always get 1 Instagram post
-      shuffledLinkedIn[0], // Always get 1 LinkedIn post
-      shuffledYouTube[0]   // Always get 1 YouTube post
+      selectFreshPost(facebookPosts, 'Facebook'),
+      selectFreshPost(instagramPosts, 'Instagram'),
+      selectFreshPost(linkedinPosts, 'LinkedIn'),
+      selectFreshPost(youtubePosts, 'YouTube')
     ];
 
-    // Add timestamps and IDs
-    return selectedPosts.map((post, index) => ({
+    // Add timestamps and IDs with better randomization
+    const timestamp = Date.now();
+    const finalPosts = selectedPosts.map((post, index) => ({
       ...post,
-      id: `post_${Date.now()}_${index}`,
+      id: `post_${timestamp}_${index}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString()
     }));
+
+    // Save the selected posts as recently used (keep only last 20)
+    const newRecentPosts = finalPosts.map(post => `${post.platform}_${post.text.substring(0, 50)}`);
+    const updatedRecent = [...newRecentPosts, ...recentlyUsed].slice(0, 20);
+    saveRecentlyUsedPosts(updatedRecent);
+
+    console.log('🔄 Generated fresh posts with anti-repetition logic:', finalPosts.map(p => `${p.platform}: ${p.text.substring(0, 30)}...`));
+    
+    return finalPosts;
   };
 
   const handleContentTypeChange = (type) => {
