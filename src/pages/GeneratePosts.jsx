@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ApiConfigModal from "../components/ApiConfigModal";
 import AILearningDashboard from "../components/AILearningDashboard";
+import ClientSelector from "../components/ClientSelector";
 import { autoPostToSocialMediaWithPlatformPosts, validateApiKeys } from "../utils/socialMediaService";
 import autoLearningService from "../utils/autoLearningService";
 import { loadEnvironmentVariables, convertToApiConfig } from "../utils/envLoader";
@@ -22,6 +23,7 @@ const GeneratePosts = () => {
   const [apiConfig, setApiConfig] = useState({});
   const [autoPostResults, setAutoPostResults] = useState([]);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
+  const [currentClient, setCurrentClient] = useState('auto-promoter');
 
   // Force re-render when apiConfig changes
   useEffect(() => {
@@ -377,10 +379,10 @@ const GeneratePosts = () => {
       return shuffled;
     };
 
-    // Get recently used posts to avoid immediate repetition
+    // Get recently used posts to avoid immediate repetition (client-specific)
     const getRecentlyUsedPosts = () => {
       try {
-        const recent = localStorage.getItem('autopromoter_recent_posts');
+        const recent = localStorage.getItem(`autopromoter_recent_posts_${currentClient}`);
         return recent ? JSON.parse(recent) : [];
       } catch (error) {
         console.error('Error loading recent posts:', error);
@@ -388,10 +390,10 @@ const GeneratePosts = () => {
       }
     };
 
-    // Save recently used posts
+    // Save recently used posts (client-specific)
     const saveRecentlyUsedPosts = (postIds) => {
       try {
-        localStorage.setItem('autopromoter_recent_posts', JSON.stringify(postIds));
+        localStorage.setItem(`autopromoter_recent_posts_${currentClient}`, JSON.stringify(postIds));
       } catch (error) {
         console.error('Error saving recent posts:', error);
       }
@@ -460,17 +462,43 @@ const GeneratePosts = () => {
 
   const handleClearRecentPosts = () => {
     try {
-      localStorage.removeItem('autopromoter_recent_posts');
-      alert('✅ Recent posts cleared! Next generation will be completely fresh.');
+      localStorage.removeItem(`autopromoter_recent_posts_${currentClient}`);
+      // Immediately generate fresh posts after clearing
+      const freshPosts = generateFreshPosts(business);
+      setPosts(freshPosts);
+      alert(`✅ Recent posts cleared for ${currentClient}! Fresh posts generated.`);
     } catch (error) {
       console.error('Error clearing recent posts:', error);
       alert('Error clearing recent posts. Please try again.');
     }
   };
 
+  const handleClientChange = (clientId) => {
+    setCurrentClient(clientId);
+    localStorage.setItem('autopromoter_current_client', clientId);
+    
+    // Load client-specific data
+    const clientData = localStorage.getItem(`autopromoter_client_${clientId}`);
+    if (clientData) {
+      const parsed = JSON.parse(clientData);
+      setBusiness(parsed.businessData);
+      setApiConfig(parsed.apiConfig);
+      
+      // Generate fresh posts for this client
+      const freshPosts = generateFreshPosts(parsed.businessData);
+      setPosts(freshPosts);
+    }
+  };
+
   useEffect(() => {
     const fetchBusinessAndGenerate = async () => {
       try {
+        // Load current client from localStorage
+        const savedClient = localStorage.getItem('autopromoter_current_client');
+        if (savedClient) {
+          setCurrentClient(savedClient);
+        }
+
         // Check if business data was passed through navigation
         if (location.state && location.state.business) {
           console.log("Using business data from navigation:", location.state.business);
@@ -552,6 +580,12 @@ const GeneratePosts = () => {
 
       <div className="relative z-10 p-4">
         <div className="max-w-6xl mx-auto">
+          {/* Client Selector */}
+          <ClientSelector 
+            currentClient={currentClient}
+            onClientChange={handleClientChange}
+          />
+          
           {/* Enhanced Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mb-6 shadow-2xl">
