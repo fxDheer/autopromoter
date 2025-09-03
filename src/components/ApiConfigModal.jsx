@@ -38,7 +38,9 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         apiKey: '',
         channelId: '',
         clientId: '',
-        clientSecret: ''
+        clientSecret: '',
+        accessToken: '',
+        refreshToken: ''
       }
     };
 
@@ -160,6 +162,97 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   const handleSave = () => {
     console.log('💾 Saving configuration:', config);
     onSave(config);
+  };
+
+  // YouTube OAuth Authentication
+  const handleYouTubeAuth = async () => {
+    try {
+      console.log('🔐 Starting YouTube OAuth authentication...');
+      
+      if (!config.youtube.clientId || !config.youtube.clientSecret) {
+        alert('⚠️ Please enter your YouTube Client ID and Client Secret first!');
+        return;
+      }
+
+      // Call backend to get OAuth URL
+      const response = await fetch('https://autopromoter-autopromoter.up.railway.app/api/social-media/youtube/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clientId: config.youtube.clientId,
+          clientSecret: config.youtube.clientSecret,
+          redirectUri: window.location.origin + '/auth/youtube/callback'
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Open OAuth URL in new window
+        const authWindow = window.open(result.authUrl, 'youtube-auth', 'width=600,height=600');
+        
+        // Listen for the callback
+        const checkClosed = setInterval(() => {
+          if (authWindow.closed) {
+            clearInterval(checkClosed);
+            // For now, we'll show a message to manually copy the code
+            const authCode = prompt('Please paste the authorization code from the YouTube OAuth page:');
+            if (authCode) {
+              handleYouTubeCallback(authCode);
+            }
+          }
+        }, 1000);
+      } else {
+        alert(`❌ YouTube OAuth failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('🔐 YouTube OAuth error:', error);
+      alert(`❌ YouTube OAuth error: ${error.message}`);
+    }
+  };
+
+  // Handle YouTube OAuth callback
+  const handleYouTubeCallback = async (code) => {
+    try {
+      console.log('🔐 Processing YouTube OAuth callback...');
+      
+      const response = await fetch('https://autopromoter-autopromoter.up.railway.app/api/social-media/youtube/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: code,
+          clientId: config.youtube.clientId,
+          clientSecret: config.youtube.clientSecret,
+          redirectUri: window.location.origin + '/auth/youtube/callback'
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update config with access token
+        setConfig(prev => ({
+          ...prev,
+          youtube: {
+            ...prev.youtube,
+            accessToken: result.data.accessToken,
+            refreshToken: result.data.refreshToken,
+            channelId: result.data.channelId
+          }
+        }));
+        
+        alert(`✅ YouTube authentication successful!\n\nChannel: ${result.data.channelTitle}\nChannel ID: ${result.data.channelId}`);
+      } else {
+        alert(`❌ YouTube authentication failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('🔐 YouTube callback error:', error);
+      alert(`❌ YouTube authentication error: ${error.message}`);
+    }
   };
 
   // Test Instagram and YouTube APIs specifically
@@ -345,6 +438,24 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
                     </p>
                   )}
                 </div>
+
+                {/* YouTube OAuth Authentication Button */}
+                {platform === 'youtube' && config[platform].enabled && (
+                  <div className="mb-6">
+                    <button
+                      onClick={handleYouTubeAuth}
+                      className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 font-semibold flex items-center justify-center space-x-2"
+                    >
+                      <span>🔐</span>
+                      <span>Authenticate with YouTube</span>
+                    </button>
+                    {config[platform].accessToken && (
+                      <p className="text-sm text-green-600 mt-2 text-center">
+                        ✅ YouTube authenticated successfully!
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* ALWAYS SHOW FIELDS - This is the key fix! */}
                 <div className="space-y-6">
