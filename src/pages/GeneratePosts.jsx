@@ -334,6 +334,36 @@ const GeneratePosts = () => {
         platform: "Facebook",
         type: "text",
         hashtags: ["2024Goals", "BusinessTransformation", "AIGrowth", "AutomationSuccess", "BusinessWinners", "GrowthGoals", "AI", "BusinessAutomation", "Success2024", "WinnersCircle"]
+      },
+      {
+        text: "💼 The difference between successful and struggling businesses? Smart automation! Our platform helps you automate 80% of repetitive tasks. Ready to join the automation revolution? 🚀 #SmartAutomation #BusinessRevolution #TaskAutomation #BusinessSuccess #AutomationPlatform #RepetitiveTasks #BusinessEfficiency #AutomationRevolution #SmartBusiness #TaskManagement",
+        platform: "Instagram",
+        type: "text",
+        hashtags: ["SmartAutomation", "BusinessRevolution", "TaskAutomation", "BusinessSuccess", "AutomationPlatform", "RepetitiveTasks", "BusinessEfficiency", "AutomationRevolution", "SmartBusiness", "TaskManagement"]
+      },
+      {
+        text: "🎯 Why do 90% of businesses fail? They don't adapt to change! Our automation solutions help you stay ahead of the curve and dominate your market. What's your biggest business challenge? 💡 #BusinessAdaptation #MarketDomination #StayAhead #BusinessChallenges #AutomationSolutions #MarketLeadership #BusinessSuccess #Adaptation #CurveAhead #BusinessGrowth",
+        platform: "LinkedIn",
+        type: "text",
+        hashtags: ["BusinessAdaptation", "MarketDomination", "StayAhead", "BusinessChallenges", "AutomationSolutions", "MarketLeadership", "BusinessSuccess", "Adaptation", "CurveAhead", "BusinessGrowth"]
+      },
+      {
+        text: "⚡ The secret to 10x business growth? Automation + AI! Our platform combines both to give you unbeatable results. Stop working harder, start working smarter! 🧠 #10XGrowth #AutomationAI #UnbeatableResults #WorkSmarter #BusinessGrowth #AIPlatform #SmartWork #BusinessResults #GrowthSecrets #AICombination",
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["10XGrowth", "AutomationAI", "UnbeatableResults", "WorkSmarter", "BusinessGrowth", "AIPlatform", "SmartWork", "BusinessResults", "GrowthSecrets", "AICombination"]
+      },
+      {
+        text: "🌟 Ready to scale your business to new heights? Our proven automation strategies have helped 1000+ businesses achieve their goals. Your success story starts here! 📈 #BusinessScaling #NewHeights #ProvenStrategies #SuccessStories #BusinessGoals #AutomationStrategies #ScaleUp #BusinessSuccess #GoalAchievement #SuccessJourney",
+        platform: "Facebook",
+        type: "text",
+        hashtags: ["BusinessScaling", "NewHeights", "ProvenStrategies", "SuccessStories", "BusinessGoals", "AutomationStrategies", "ScaleUp", "BusinessSuccess", "GoalAchievement", "SuccessJourney"]
+      },
+      {
+        text: "🚀 The future of business is here! Companies using our automation platform are seeing 5x faster growth. Don't get left behind in the digital revolution! 💻 #FutureOfBusiness #5XGrowth #AutomationPlatform #DigitalRevolution #BusinessGrowth #FutureReady #DigitalTransformation #GrowthAcceleration #BusinessInnovation #TechAdvancement",
+        platform: "Instagram",
+        type: "text",
+        hashtags: ["FutureOfBusiness", "5XGrowth", "AutomationPlatform", "DigitalRevolution", "BusinessGrowth", "FutureReady", "DigitalTransformation", "GrowthAcceleration", "BusinessInnovation", "TechAdvancement"]
       }
     ];
 
@@ -378,14 +408,19 @@ const GeneratePosts = () => {
 
     // Function to select a post that hasn't been used recently
     const selectFreshPost = (posts, platform) => {
+      // Create unique IDs for each post template
+      const postsWithIds = posts.map((post, index) => ({
+        ...post,
+        templateId: `${platform}_template_${index}`
+      }));
+      
       // Filter out recently used posts for this platform
-      const availablePosts = posts.filter(post => {
-        const postKey = `${platform}_${post.text.substring(0, 50)}`;
-        return !recentlyUsed.includes(postKey);
+      const availablePosts = postsWithIds.filter(post => {
+        return !recentlyUsed.includes(post.templateId);
       });
       
       // If all posts have been used recently, use all posts
-      const postsToChooseFrom = availablePosts.length > 0 ? availablePosts : posts;
+      const postsToChooseFrom = availablePosts.length > 0 ? availablePosts : postsWithIds;
       
       // Shuffle and select the first one
       const shuffled = shuffleArray(postsToChooseFrom);
@@ -409,7 +444,7 @@ const GeneratePosts = () => {
     }));
 
     // Save the selected posts as recently used (keep only last 20)
-    const newRecentPosts = finalPosts.map(post => `${post.platform}_${post.text.substring(0, 50)}`);
+    const newRecentPosts = finalPosts.map(post => post.templateId);
     const updatedRecent = [...newRecentPosts, ...recentlyUsed].slice(0, 20);
     saveRecentlyUsedPosts(updatedRecent);
 
@@ -421,6 +456,16 @@ const GeneratePosts = () => {
   const handleContentTypeChange = (type) => {
     setContentType(type);
     setTimeout(() => handleGenerateMore(), 100);
+  };
+
+  const handleClearRecentPosts = () => {
+    try {
+      localStorage.removeItem('autopromoter_recent_posts');
+      alert('✅ Recent posts cleared! Next generation will be completely fresh.');
+    } catch (error) {
+      console.error('Error clearing recent posts:', error);
+      alert('Error clearing recent posts. Please try again.');
+    }
   };
 
   useEffect(() => {
@@ -922,6 +967,12 @@ const GeneratePosts = () => {
                     ) : (
                       "🔄 Generate More"
                     )}
+                  </button>
+                  <button 
+                    onClick={() => handleClearRecentPosts()}
+                    className="px-6 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold rounded-xl hover:from-orange-700 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-2xl"
+                  >
+                    🗑️ Clear Recent
                   </button>
                 </div>
               </div>
