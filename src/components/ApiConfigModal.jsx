@@ -209,8 +209,10 @@ Click OK to proceed with authentication.`);
           // Open OAuth URL in new tab
           window.open(result.authUrl, '_blank');
           
-          // Prompt for authorization code
+          // Prompt for authorization code with better instructions
           const authCode = prompt(`🔐 YouTube OAuth Authentication
+
+IMPORTANT: You have 10 minutes to complete this!
 
 Please follow these steps:
 
@@ -218,14 +220,18 @@ Please follow these steps:
 2. After authentication, you'll see a page with an error (this is normal)
 3. Look at the URL bar - find the part that says "code="
 4. Copy everything after "code=" until the next "&" symbol
-5. Paste the code here
+5. Paste the code here IMMEDIATELY (codes expire in 10 minutes)
 
 Example: If URL shows "code=4/0AX4XfWh...very-long-code...&scope=..."
 Copy: 4/0AX4XfWh...very-long-code...
 
+⚠️ HURRY! Authorization codes expire quickly!
+
 Paste your authorization code here:`);
           
           if (authCode && authCode.trim()) {
+            // Immediately process the code
+            console.log('🔐 Processing authorization code immediately...');
             handleYouTubeCallback(authCode.trim());
           } else {
             alert('❌ No authorization code provided. Please try again.');
@@ -243,7 +249,7 @@ Paste your authorization code here:`);
   // Handle YouTube OAuth callback
   const handleYouTubeCallback = async (code) => {
     try {
-      console.log('🔐 Processing YouTube OAuth callback...');
+      console.log('🔐 Processing YouTube OAuth callback with code:', code.substring(0, 20) + '...');
       
       const response = await fetch('https://autopromoter-autopromoter.up.railway.app/api/social-media/youtube/callback', {
         method: 'POST',
@@ -258,7 +264,9 @@ Paste your authorization code here:`);
         })
       });
 
+      console.log('🔐 Backend response status:', response.status);
       const result = await response.json();
+      console.log('🔐 Backend response:', result);
 
       if (result.success) {
         // Update config with access token
@@ -272,13 +280,25 @@ Paste your authorization code here:`);
           }
         }));
         
-        alert(`✅ YouTube authentication successful!\n\nChannel: ${result.data.channelTitle}\nChannel ID: ${result.data.channelId}`);
+        alert(`✅ YouTube authentication successful!\n\nChannel: ${result.data.channelTitle}\nChannel ID: ${result.data.channelId}\n\nYou can now post to YouTube!`);
       } else {
-        alert(`❌ YouTube authentication failed: ${result.error}`);
+        // Provide more specific error messages
+        let errorMessage = result.error || 'Unknown error';
+        if (result.message) {
+          errorMessage += `: ${result.message}`;
+        }
+        
+        if (errorMessage.includes('invalid_grant')) {
+          errorMessage = 'Authorization code expired or invalid. Please try the authentication process again immediately.';
+        } else if (errorMessage.includes('access_denied')) {
+          errorMessage = 'Access denied. Please make sure you grant all required permissions.';
+        }
+        
+        alert(`❌ YouTube authentication failed: ${errorMessage}\n\nPlease try the authentication process again.`);
       }
     } catch (error) {
       console.error('🔐 YouTube callback error:', error);
-      alert(`❌ YouTube authentication error: ${error.message}`);
+      alert(`❌ YouTube authentication error: ${error.message}\n\nPlease check your internet connection and try again.`);
     }
   };
 
