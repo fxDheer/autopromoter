@@ -209,12 +209,19 @@ Click OK to proceed with authentication.`);
           // Open OAuth URL in new window
           const authWindow = window.open(result.authUrl, 'youtube-auth', 'width=800,height=600,scrollbars=yes,resizable=yes');
           
+          // Check if popup was blocked or failed to open
+          if (!authWindow || authWindow.closed || typeof authWindow.closed === 'undefined') {
+            alert('❌ Popup was blocked! Please allow popups for this site and try again.');
+            return;
+          }
+          
           // Listen for the callback
           const checkClosed = setInterval(() => {
-            if (authWindow.closed) {
-              clearInterval(checkClosed);
-              // Show detailed instructions for finding the code
-              const authCode = prompt(`🔐 YouTube Authorization Code Required:
+            try {
+              if (authWindow && authWindow.closed) {
+                clearInterval(checkClosed);
+                // Show detailed instructions for finding the code
+                const authCode = prompt(`🔐 YouTube Authorization Code Required:
 
 To find your authorization code:
 
@@ -229,12 +236,16 @@ If you couldn't find the code:
 - Make sure to look at the URL bar before closing the popup
 
 Paste the authorization code here:`);
-              
-              if (authCode && authCode.trim()) {
-                handleYouTubeCallback(authCode.trim());
-              } else {
-                alert('❌ No authorization code provided. Please try the authentication process again.');
+                
+                if (authCode && authCode.trim()) {
+                  handleYouTubeCallback(authCode.trim());
+                } else {
+                  alert('❌ No authorization code provided. Please try the authentication process again.');
+                }
               }
+            } catch (error) {
+              console.error('Error checking popup status:', error);
+              clearInterval(checkClosed);
             }
           }, 1000);
         }
