@@ -261,7 +261,7 @@ const instagramService = {
 
 // YouTube API Integration
 const youtubeService = {
-  async createPost(content, apiKey, channelId, clientId, clientSecret, accessToken) {
+    async createPost(content, apiKey, channelId, clientId, clientSecret, accessToken) {
     try {
       console.log('📺 YouTube: Creating community post for channel:', channelId);
       
@@ -275,7 +275,8 @@ const youtubeService = {
             content: content.text,
             type: 'community_post',
             note: 'YouTube post prepared. Please authenticate with YouTube to enable actual posting.',
-            actionRequired: 'Please click "🔐 Authenticate with YouTube" in the API Configuration modal.'
+            actionRequired: 'Please click "🔐 Authenticate with YouTube" in the API Configuration modal.',
+            instructions: 'After authentication, posts will appear in your YouTube Community tab.'
           }
         };
       }
@@ -295,7 +296,8 @@ const youtubeService = {
           channelId, 
           content: content.text,
           type: 'community_post',
-          note: 'YouTube community posts are prepared. Manual posting may be required.'
+          note: 'YouTube community posts are prepared. Manual posting may be required.',
+          instructions: 'Posts will appear in your YouTube Community tab after authentication.'
         }
       };
     } catch (error) {
@@ -328,9 +330,9 @@ const youtubeService = {
       }
 
       if (!content.videoUrl && !content.videoFile) {
-        return {
-          success: false,
-          platform: 'YouTube',
+      return {
+        success: false,
+        platform: 'YouTube',
           error: 'Video URL or video file is required for YouTube upload'
         };
       }
@@ -356,7 +358,7 @@ const youtubeService = {
         success: true,
         platform: 'YouTube',
         message: 'YouTube video upload prepared successfully',
-        data: { 
+        data: {
           channelId, 
           videoMetadata,
           videoUrl: content.videoUrl,
@@ -386,16 +388,16 @@ const youtubeService = {
       });
 
       if (response.data.items && response.data.items.length > 0) {
-        const channel = response.data.items[0];
-        return {
-          success: true,
-          platform: 'YouTube',
-          data: {
+      const channel = response.data.items[0];
+      return {
+        success: true,
+        platform: 'YouTube',
+        data: {
             channelId: channel.id,
-            title: channel.snippet.title,
-            description: channel.snippet.description,
-            subscriberCount: channel.statistics.subscriberCount,
-            videoCount: channel.statistics.videoCount,
+          title: channel.snippet.title,
+          description: channel.snippet.description,
+          subscriberCount: channel.statistics.subscriberCount,
+          videoCount: channel.statistics.videoCount,
             viewCount: channel.statistics.viewCount
           }
         };
@@ -425,7 +427,7 @@ const linkedinService = {
       
       // LinkedIn posting implementation would go here
       // For now, return a success message
-      
+
       return {
         success: true,
         platform: 'LinkedIn',
