@@ -268,8 +268,26 @@ const GeneratePosts = () => {
     }
   };
 
-  // Generate fresh posts with different hashtags every time
+  // Generate completely fresh posts with enhanced randomization
   const generateFreshPosts = (businessData) => {
+    // Create dynamic post templates with random elements
+    const createDynamicPost = (baseTemplate, platform) => {
+      const randomElements = [
+        "🚀", "⚡", "💡", "🎯", "🔥", "🌟", "💪", "🎉", "📈", "🚀",
+        "transform", "revolutionize", "boost", "accelerate", "optimize", "enhance", "maximize", "streamline", "elevate", "supercharge"
+      ];
+      
+      const randomElement = randomElements[Math.floor(Math.random() * randomElements.length)];
+      const randomAction = randomElements[Math.floor(Math.random() * randomElements.length)];
+      
+      return {
+        ...baseTemplate,
+        text: baseTemplate.text.replace("🚀", randomElement).replace("transform", randomAction),
+        id: `${platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now()
+      };
+    };
+
     const postTemplates = [
       {
         text: "🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. 💡 Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation",
@@ -366,41 +384,76 @@ const GeneratePosts = () => {
         platform: "Instagram",
         type: "text",
         hashtags: ["FutureOfBusiness", "5XGrowth", "AutomationPlatform", "DigitalRevolution", "BusinessGrowth", "FutureReady", "DigitalTransformation", "GrowthAcceleration", "BusinessInnovation", "TechAdvancement"]
+      },
+      {
+        text: "💎 Premium automation solutions for elite businesses! Our enterprise-grade platform delivers unmatched performance and reliability. Ready to join the elite? 🏆 #EliteBusiness #PremiumAutomation #EnterpriseGrade #UnmatchedPerformance #BusinessElite #PremiumSolutions #EnterprisePlatform #ElitePerformance #BusinessExcellence #PremiumGrade",
+        platform: "Facebook",
+        type: "text",
+        hashtags: ["EliteBusiness", "PremiumAutomation", "EnterpriseGrade", "UnmatchedPerformance", "BusinessElite", "PremiumSolutions", "EnterprisePlatform", "ElitePerformance", "BusinessExcellence", "PremiumGrade"]
+      },
+      {
+        text: "🎪 The circus of manual work is over! Our automation platform brings order to chaos and efficiency to every process. Time to tame the business beast! 🎭 #BusinessCircus #OrderFromChaos #ProcessEfficiency #BusinessTaming #AutomationMagic #EfficiencyWizard #BusinessOrder #ChaosToOrder #ProcessMastery #BusinessControl",
+        platform: "Instagram",
+        type: "text",
+        hashtags: ["BusinessCircus", "OrderFromChaos", "ProcessEfficiency", "BusinessTaming", "AutomationMagic", "EfficiencyWizard", "BusinessOrder", "ChaosToOrder", "ProcessMastery", "BusinessControl"]
+      },
+      {
+        text: "🏆 Championship-level business automation! Our platform helps you compete at the highest level and dominate your industry. Ready to become a champion? 🥇 #BusinessChampion #ChampionshipLevel #IndustryDomination #HighestLevel #BusinessCompetition #ChampionMindset #IndustryLeader #BusinessVictory #ChampionshipBusiness #DominateIndustry",
+        platform: "LinkedIn",
+        type: "text",
+        hashtags: ["BusinessChampion", "ChampionshipLevel", "IndustryDomination", "HighestLevel", "BusinessCompetition", "ChampionMindset", "IndustryLeader", "BusinessVictory", "ChampionshipBusiness", "DominateIndustry"]
+      },
+      {
+        text: "🎨 Art meets automation! Our platform transforms business processes into masterpieces of efficiency. Create your business masterpiece today! 🖼️ #BusinessArt #AutomationMasterpiece #EfficiencyArt #BusinessCreativity #ProcessMasterpiece #ArtisticAutomation #BusinessDesign #CreativeEfficiency #MasterpieceBusiness #ArtisticProcess",
+        platform: "YouTube",
+        type: "text",
+        hashtags: ["BusinessArt", "AutomationMasterpiece", "EfficiencyArt", "BusinessCreativity", "ProcessMasterpiece", "ArtisticAutomation", "BusinessDesign", "CreativeEfficiency", "MasterpieceBusiness", "ArtisticProcess"]
+      },
+      {
+        text: "🌊 Ride the wave of automation! Our platform helps you surf the digital transformation wave and stay ahead of the competition. Catch the wave! 🏄‍♂️ #AutomationWave #DigitalSurfing #TransformationWave #RideTheWave #DigitalWave #AutomationSurfing #WaveRiding #DigitalTransformation #AutomationFlow #WaveOfChange",
+        platform: "Facebook",
+        type: "text",
+        hashtags: ["AutomationWave", "DigitalSurfing", "TransformationWave", "RideTheWave", "DigitalWave", "AutomationSurfing", "WaveRiding", "DigitalTransformation", "AutomationFlow", "WaveOfChange"]
       }
     ];
 
-    // Better randomization using Fisher-Yates shuffle algorithm
+    // Enhanced randomization with multiple layers
     const shuffleArray = (array) => {
       const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      // Multiple shuffle passes for better randomization
+      for (let pass = 0; pass < 3; pass++) {
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
       }
       return shuffled;
     };
 
-    // Get recently used posts to avoid immediate repetition (client-specific)
-    const getRecentlyUsedPosts = () => {
+    // Get session-based recent posts (resets on page refresh)
+    const getSessionRecentPosts = () => {
       try {
-        const recent = localStorage.getItem(`autopromoter_recent_posts_${currentClient}`);
+        const sessionKey = `autopromoter_session_${currentClient}_${Math.floor(Date.now() / (1000 * 60 * 5))}`; // 5-minute sessions
+        const recent = sessionStorage.getItem(sessionKey);
         return recent ? JSON.parse(recent) : [];
       } catch (error) {
-        console.error('Error loading recent posts:', error);
+        console.error('Error loading session recent posts:', error);
         return [];
       }
     };
 
-    // Save recently used posts (client-specific)
-    const saveRecentlyUsedPosts = (postIds) => {
+    // Save session-based recent posts
+    const saveSessionRecentPosts = (postIds) => {
       try {
-        localStorage.setItem(`autopromoter_recent_posts_${currentClient}`, JSON.stringify(postIds));
+        const sessionKey = `autopromoter_session_${currentClient}_${Math.floor(Date.now() / (1000 * 60 * 5))}`;
+        sessionStorage.setItem(sessionKey, JSON.stringify(postIds));
       } catch (error) {
-        console.error('Error saving recent posts:', error);
+        console.error('Error saving session recent posts:', error);
       }
     };
 
     // Get recently used posts to avoid repetition
-    const recentlyUsed = getRecentlyUsedPosts();
+    const recentlyUsed = getSessionRecentPosts();
     
     // Separate posts by platform to ensure we get at least one of each
     const facebookPosts = postTemplates.filter(post => post.platform === 'Facebook');
@@ -408,25 +461,42 @@ const GeneratePosts = () => {
     const linkedinPosts = postTemplates.filter(post => post.platform === 'LinkedIn');
     const youtubePosts = postTemplates.filter(post => post.platform === 'YouTube');
 
-    // Function to select a post that hasn't been used recently
+    // Function to select a completely fresh post
     const selectFreshPost = (posts, platform) => {
-      // Create unique IDs for each post template
-      const postsWithIds = posts.map((post, index) => ({
-        ...post,
-        templateId: `${platform}_template_${index}`
-      }));
-      
-      // Filter out recently used posts for this platform
-      const availablePosts = postsWithIds.filter(post => {
-        return !recentlyUsed.includes(post.templateId);
+      // Create dynamic variations of each post
+      const dynamicPosts = posts.map((post, index) => {
+        const variations = [
+          { ...post, variation: 'A' },
+          { ...post, variation: 'B', text: post.text.replace('🚀', '⚡').replace('💡', '🎯') },
+          { ...post, variation: 'C', text: post.text.replace('🔥', '🌟').replace('💪', '🎉') }
+        ];
+        return variations[Math.floor(Math.random() * variations.length)];
       });
       
-      // If all posts have been used recently, use all posts
-      const postsToChooseFrom = availablePosts.length > 0 ? availablePosts : postsWithIds;
+      // Shuffle all dynamic posts
+      const shuffledPosts = shuffleArray(dynamicPosts);
       
-      // Shuffle and select the first one
-      const shuffled = shuffleArray(postsToChooseFrom);
-      return shuffled[0];
+      // Select the first post that hasn't been used in this session
+      for (const post of shuffledPosts) {
+        const postKey = `${platform}_${post.text.substring(0, 20)}_${post.variation}`;
+        if (!recentlyUsed.includes(postKey)) {
+          return {
+            ...post,
+            templateId: postKey,
+            id: `${platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: Date.now()
+          };
+        }
+      }
+      
+      // If all posts have been used, return a random one with fresh ID
+      const randomPost = shuffledPosts[0];
+      return {
+        ...randomPost,
+        templateId: `${platform}_${randomPost.text.substring(0, 20)}_${randomPost.variation}_${Date.now()}`,
+        id: `${platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now()
+      };
     };
 
     // Select fresh posts for each platform
@@ -437,20 +507,21 @@ const GeneratePosts = () => {
       selectFreshPost(youtubePosts, 'YouTube')
     ];
 
-    // Add timestamps and IDs with better randomization
+    // Add final randomization and timestamps
     const timestamp = Date.now();
     const finalPosts = selectedPosts.map((post, index) => ({
       ...post,
       id: `post_${timestamp}_${index}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      sessionId: Math.floor(Date.now() / (1000 * 60 * 5)) // 5-minute session ID
     }));
 
-    // Save the selected posts as recently used (keep only last 20)
+    // Save the selected posts as recently used for this session
     const newRecentPosts = finalPosts.map(post => post.templateId);
-    const updatedRecent = [...newRecentPosts, ...recentlyUsed].slice(0, 20);
-    saveRecentlyUsedPosts(updatedRecent);
+    const updatedRecent = [...newRecentPosts, ...recentlyUsed].slice(0, 50); // Keep more in session
+    saveSessionRecentPosts(updatedRecent);
 
-    console.log('🔄 Generated fresh posts with anti-repetition logic:', finalPosts.map(p => `${p.platform}: ${p.text.substring(0, 30)}...`));
+    console.log('🔄 Generated completely fresh posts with enhanced randomization:', finalPosts.map(p => `${p.platform}: ${p.text.substring(0, 30)}...`));
     
     return finalPosts;
   };
@@ -462,11 +533,21 @@ const GeneratePosts = () => {
 
   const handleClearRecentPosts = () => {
     try {
+      // Clear all session storage for this client
+      const keys = Object.keys(sessionStorage);
+      keys.forEach(key => {
+        if (key.includes(`autopromoter_session_${currentClient}`)) {
+          sessionStorage.removeItem(key);
+        }
+      });
+      
+      // Also clear localStorage for this client
       localStorage.removeItem(`autopromoter_recent_posts_${currentClient}`);
+      
       // Immediately generate fresh posts after clearing
       const freshPosts = generateFreshPosts(business);
       setPosts(freshPosts);
-      alert(`✅ Recent posts cleared for ${currentClient}! Fresh posts generated.`);
+      alert(`✅ All recent posts cleared for ${currentClient}! Completely fresh posts generated.`);
     } catch (error) {
       console.error('Error clearing recent posts:', error);
       alert('Error clearing recent posts. Please try again.');
@@ -493,6 +574,14 @@ const GeneratePosts = () => {
   useEffect(() => {
     const fetchBusinessAndGenerate = async () => {
       try {
+        // Clear session storage on page refresh to ensure fresh posts
+        const keys = Object.keys(sessionStorage);
+        keys.forEach(key => {
+          if (key.includes('autopromoter_session_')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+
         // Load current client from localStorage
         const savedClient = localStorage.getItem('autopromoter_current_client');
         if (savedClient) {
