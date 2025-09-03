@@ -805,7 +805,7 @@ router.post('/youtube/auth', async (req, res) => {
     const oauth2Client = new google.auth.OAuth2(
       clientId,
       clientSecret,
-      redirectUri || 'http://localhost:3000/auth/youtube/callback'
+      redirectUri || 'https://developers.google.com/oauthplayground'
     );
 
     // Generate the URL for OAuth consent
@@ -850,7 +850,7 @@ router.post('/youtube/callback', async (req, res) => {
     const oauth2Client = new google.auth.OAuth2(
       clientId,
       clientSecret,
-      redirectUri || 'http://localhost:3000/auth/youtube/callback'
+      redirectUri || 'https://developers.google.com/oauthplayground'
     );
 
     // Exchange code for tokens

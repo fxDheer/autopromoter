@@ -183,7 +183,7 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         body: JSON.stringify({
           clientId: config.youtube.clientId,
           clientSecret: config.youtube.clientSecret,
-          redirectUri: 'http://localhost:3000/auth/youtube/callback'
+          redirectUri: 'https://developers.google.com/oauthplayground'
         })
       });
 
@@ -277,7 +277,7 @@ Authorization code:`);
           code: code,
           clientId: config.youtube.clientId,
           clientSecret: config.youtube.clientSecret,
-          redirectUri: 'http://localhost:3000/auth/youtube/callback'
+          redirectUri: 'https://developers.google.com/oauthplayground'
         })
       });
 
