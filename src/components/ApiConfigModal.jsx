@@ -190,20 +190,54 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
       const result = await response.json();
 
       if (result.success) {
-        // Open OAuth URL in new window
-        const authWindow = window.open(result.authUrl, 'youtube-auth', 'width=600,height=600');
-        
-        // Listen for the callback
-        const checkClosed = setInterval(() => {
-          if (authWindow.closed) {
-            clearInterval(checkClosed);
-            // For now, we'll show a message to manually copy the code
-            const authCode = prompt('Please paste the authorization code from the YouTube OAuth page:');
-            if (authCode) {
-              handleYouTubeCallback(authCode);
+        // Show detailed instructions first
+        const proceed = confirm(`🔐 YouTube OAuth Instructions:
+
+1. A new window will open with Google's OAuth page
+2. Sign in with your YouTube account
+3. Grant permissions for YouTube Data API v3
+4. After granting permissions, you'll see a success page
+5. Look at the URL bar at the top of the browser window
+6. Copy the code that appears after "code=" in the URL
+7. Paste it in the prompt that will appear
+
+Example URL: https://localhost:3000/auth/youtube/callback?code=4/0AX4XfWh...very-long-code...
+
+Click OK to proceed with authentication.`);
+
+        if (proceed) {
+          // Open OAuth URL in new window
+          const authWindow = window.open(result.authUrl, 'youtube-auth', 'width=800,height=600,scrollbars=yes,resizable=yes');
+          
+          // Listen for the callback
+          const checkClosed = setInterval(() => {
+            if (authWindow.closed) {
+              clearInterval(checkClosed);
+              // Show detailed instructions for finding the code
+              const authCode = prompt(`🔐 YouTube Authorization Code Required:
+
+To find your authorization code:
+
+1. Look at the URL bar in the popup window that just closed
+2. Find the part that says "code=" followed by a long string
+3. Copy everything after "code=" until the next "&" symbol
+4. The code looks like: 4/0AX4XfWh...very-long-code...
+
+If you couldn't find the code:
+- The popup might have closed too quickly
+- Try the authentication again
+- Make sure to look at the URL bar before closing the popup
+
+Paste the authorization code here:`);
+              
+              if (authCode && authCode.trim()) {
+                handleYouTubeCallback(authCode.trim());
+              } else {
+                alert('❌ No authorization code provided. Please try the authentication process again.');
+              }
             }
-          }
-        }, 1000);
+          }, 1000);
+        }
       } else {
         alert(`❌ YouTube OAuth failed: ${result.error}`);
       }
