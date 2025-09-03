@@ -183,7 +183,7 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         body: JSON.stringify({
           clientId: config.youtube.clientId,
           clientSecret: config.youtube.clientSecret,
-          redirectUri: window.location.origin + '/auth/youtube/callback'
+          redirectUri: 'http://localhost:3000/auth/youtube/callback'
         })
       });
 
@@ -206,48 +206,30 @@ Example URL: https://localhost:3000/auth/youtube/callback?code=4/0AX4XfWh...very
 Click OK to proceed with authentication.`);
 
         if (proceed) {
-          // Open OAuth URL in new window
-          const authWindow = window.open(result.authUrl, 'youtube-auth', 'width=800,height=600,scrollbars=yes,resizable=yes');
+          // Open OAuth URL in new tab
+          window.open(result.authUrl, '_blank');
           
-          // Check if popup was blocked or failed to open
-          if (!authWindow || authWindow.closed || typeof authWindow.closed === 'undefined') {
-            alert('❌ Popup was blocked! Please allow popups for this site and try again.');
-            return;
+          // Prompt for authorization code
+          const authCode = prompt(`🔐 YouTube OAuth Authentication
+
+Please follow these steps:
+
+1. Complete authentication in the new tab that just opened
+2. After authentication, you'll see a page with an error (this is normal)
+3. Look at the URL bar - find the part that says "code="
+4. Copy everything after "code=" until the next "&" symbol
+5. Paste the code here
+
+Example: If URL shows "code=4/0AX4XfWh...very-long-code...&scope=..."
+Copy: 4/0AX4XfWh...very-long-code...
+
+Paste your authorization code here:`);
+          
+          if (authCode && authCode.trim()) {
+            handleYouTubeCallback(authCode.trim());
+          } else {
+            alert('❌ No authorization code provided. Please try again.');
           }
-          
-          // Listen for the callback
-          const checkClosed = setInterval(() => {
-            try {
-              if (authWindow && authWindow.closed) {
-                clearInterval(checkClosed);
-                // Show detailed instructions for finding the code
-                const authCode = prompt(`🔐 YouTube Authorization Code Required:
-
-To find your authorization code:
-
-1. Look at the URL bar in the popup window that just closed
-2. Find the part that says "code=" followed by a long string
-3. Copy everything after "code=" until the next "&" symbol
-4. The code looks like: 4/0AX4XfWh...very-long-code...
-
-If you couldn't find the code:
-- The popup might have closed too quickly
-- Try the authentication again
-- Make sure to look at the URL bar before closing the popup
-
-Paste the authorization code here:`);
-                
-                if (authCode && authCode.trim()) {
-                  handleYouTubeCallback(authCode.trim());
-                } else {
-                  alert('❌ No authorization code provided. Please try the authentication process again.');
-                }
-              }
-            } catch (error) {
-              console.error('Error checking popup status:', error);
-              clearInterval(checkClosed);
-            }
-          }, 1000);
         }
       } else {
         alert(`❌ YouTube OAuth failed: ${result.error}`);
@@ -272,7 +254,7 @@ Paste the authorization code here:`);
           code: code,
           clientId: config.youtube.clientId,
           clientSecret: config.youtube.clientSecret,
-          redirectUri: window.location.origin + '/auth/youtube/callback'
+          redirectUri: 'http://localhost:3000/auth/youtube/callback'
         })
       });
 
