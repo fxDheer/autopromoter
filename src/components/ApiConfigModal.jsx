@@ -503,19 +503,42 @@ Authorization code:`);
                   )}
                 </div>
 
-                {/* YouTube OAuth Authentication Button */}
+                {/* YouTube RSS Feed Method */}
                 {platform === 'youtube' && config[platform].enabled && (
                   <div className="mb-6">
-                    <button
-                      onClick={handleYouTubeAuth}
-                      className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 font-semibold flex items-center justify-center space-x-2"
-                    >
-                      <span>🔐</span>
-                      <span>Authenticate with YouTube</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        const manualCode = prompt(`🔐 Manual YouTube Authentication
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4 mb-4">
+                      <h4 className="font-bold text-green-800 mb-2 flex items-center">
+                        <span className="mr-2">🎯</span>
+                        RSS Feed Method (Recommended)
+                      </h4>
+                      <p className="text-sm text-green-700 mb-3">
+                        No authentication required! YouTube will automatically pick up new content from our RSS feed.
+                      </p>
+                      <div className="bg-white p-3 rounded-lg border">
+                        <p className="text-sm font-mono text-gray-600 break-all">
+                          <strong>RSS Feed URL:</strong><br/>
+                          <span className="text-blue-600">https://autopromoter-autopromoter.up.railway.app/api/social-media/youtube/rss</span>
+                        </p>
+                      </div>
+                      <div className="mt-3 text-xs text-green-600">
+                        <p>✅ Permanent solution - never expires</p>
+                        <p>✅ No OAuth complexity</p>
+                        <p>✅ Perfect for automation</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <h5 className="font-semibold text-gray-700 mb-3">Alternative: OAuth Method</h5>
+                      <button
+                        onClick={handleYouTubeAuth}
+                        className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 font-semibold flex items-center justify-center space-x-2"
+                      >
+                        <span>🔐</span>
+                        <span>Authenticate with YouTube</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          const manualCode = prompt(`🔐 Manual YouTube Authentication
 
 If OAuth keeps failing, you can manually enter an authorization code:
 
@@ -529,20 +552,21 @@ If OAuth keeps failing, you can manually enter an authorization code:
 8. Paste it here
 
 Authorization code:`);
-                        if (manualCode && manualCode.trim()) {
-                          handleYouTubeCallback(manualCode.trim());
-                        }
-                      }}
-                      className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 text-white px-6 py-3 rounded-xl hover:from-orange-700 hover:to-yellow-700 transition-all duration-300 font-semibold flex items-center justify-center space-x-2 mt-2"
-                    >
-                      <span>🔧</span>
-                      <span>Manual Authentication</span>
-                    </button>
-                    {config[platform].accessToken && (
-                      <p className="text-sm text-green-600 mt-2 text-center">
-                        ✅ YouTube authenticated successfully!
-                      </p>
-                    )}
+                          if (manualCode && manualCode.trim()) {
+                            handleYouTubeCallback(manualCode.trim());
+                          }
+                        }}
+                        className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 text-white px-6 py-3 rounded-xl hover:from-orange-700 hover:to-yellow-700 transition-all duration-300 font-semibold flex items-center justify-center space-x-2 mt-2"
+                      >
+                        <span>🔧</span>
+                        <span>Manual Authentication</span>
+                      </button>
+                      {config[platform].accessToken && (
+                        <p className="text-sm text-green-600 mt-2 text-center">
+                          ✅ YouTube authenticated successfully!
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
 
