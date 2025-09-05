@@ -1,0 +1,5 @@
+[33m7e6b22a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mgemini-integration[m[33m, [m[1;32mmaster[m[33m)[m Fix Instagram appsecret_proof error and use Gemini for image generation
+[33me1e50c0[m Fix image loading - replace via.placeholder.com with Unsplash images
+[33mc00fd1b[m Fix Instagram appsecret_proof error - add fallback handling
+[33m68e6355[m Add Railway frontend deployment configuration
+[33me43b459[m Remove test files with API keys
