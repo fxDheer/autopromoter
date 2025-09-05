@@ -215,21 +215,21 @@ const GeneratePosts = () => {
             platform: "Instagram Reels",
             type: "video",
             videoUrl: "https://example.com/video1.mp4",
-            thumbnail: "https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=Video+1"
+            thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
           },
           {
             text: "📱 TikTok: The secret to viral business content! Learn how we helped 100+ businesses go viral with our proven strategies! 💡 #TikTokMarketing #ViralContent #BusinessTips",
             platform: "TikTok",
             type: "video",
             videoUrl: "https://example.com/video2.mp4",
-            thumbnail: "https://via.placeholder.com/300x400/4ECDC4/FFFFFF?text=Video+2"
+            thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
           },
           {
             text: "🎥 YouTube Shorts: 5 Game-Changing Business Automation Tips You Need to Know! Save this for later! ⚡ #YouTubeShorts #Automation #BusinessTips",
             platform: "YouTube Shorts",
             type: "video",
             videoUrl: "https://example.com/video3.mp4",
-            thumbnail: "https://via.placeholder.com/300x400/45B7D1/FFFFFF?text=Video+3"
+            thumbnail: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
           }
         ];
       } else if (contentType === 'image') {
@@ -244,14 +244,14 @@ const GeneratePosts = () => {
               text: "📸 NEW: Our revolutionary business automation dashboard! See how easy it is to manage everything in one place! 🎯 #Dashboard #Automation #BusinessTools",
               platform: "Instagram",
               type: "image",
-              imageUrl: "https://via.placeholder.com/600x600/FF6B6B/FFFFFF?text=Dashboard+Preview",
+              imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=600&fit=crop&crop=center&auto=format&q=80",
               aiGenerated: false
             },
             {
               text: "🖼️ Infographic: The Ultimate Guide to Business Growth in 2024! Save and share with your team! 📊 #Infographic #BusinessGrowth #2024",
               platform: "Facebook",
               type: "image",
-              imageUrl: "https://via.placeholder.com/800x600/4ECDC4/FFFFFF?text=Growth+Infographic",
+              imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&crop=center&auto=format&q=80",
               aiGenerated: false
             },
             {
@@ -259,9 +259,9 @@ const GeneratePosts = () => {
               platform: "Instagram",
               type: "carousel",
               images: [
-                "https://via.placeholder.com/600x600/FF6B6B/FFFFFF?text=Step+1",
-                "https://via.placeholder.com/600x600/4ECDC4/FFFFFF?text=Step+2",
-                "https://via.placeholder.com/600x600/45B7D1/FFFFFF?text=Step+3"
+                "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=600&fit=crop&crop=center&auto=format&q=80",
+                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=600&fit=crop&crop=center&auto=format&q=80",
+                "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=600&fit=crop&crop=center&auto=format&q=80"
               ],
               aiGenerated: false
             }

@@ -134,9 +134,9 @@ export async function generateAIImagePosts(business, count = 3) {
     
     for (let i = 0; i < count; i++) {
       const image = aiImages[i] || {
-        url: `https://via.placeholder.com/1024x1024/4F46E5/FFFFFF?text=AI+Generated+${i + 1}`,
+        url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
         platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
-        type: "placeholder"
+        type: "professional_placeholder"
       };
       
       const textPost = textPosts[i] || {
