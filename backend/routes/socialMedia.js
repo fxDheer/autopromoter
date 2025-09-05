@@ -129,17 +129,25 @@ const instagramService = {
       const appSecretProof = generateAppSecretProof(accessToken, appSecret);
       
       if (!appSecretProof) {
+        console.error('📸 Instagram: Failed to generate app secret proof');
+        console.error('📸 Instagram: Access token length:', accessToken?.length || 0);
+        console.error('📸 Instagram: App secret length:', appSecret?.length || 0);
         throw new Error('Failed to generate app secret proof. Please check your app secret.');
       }
 
       console.log('📸 Instagram: App secret proof generated successfully');
+      console.log('📸 Instagram: App secret proof length:', appSecretProof.length);
 
       // Create media container with correct API version (v23.0)
       const mediaData = {
         access_token: accessToken,
-        media_type: mediaType,
-        appsecret_proof: appSecretProof
+        media_type: mediaType
       };
+
+      // Only add appsecret_proof if we have it
+      if (appSecretProof) {
+        mediaData.appsecret_proof = appSecretProof;
+      }
 
       // Add media URL based on type
       if (content.imageUrl) {
@@ -219,9 +227,13 @@ const instagramService = {
 
       // Publish the media
       const publishData = {
-        access_token: accessToken,
-        appsecret_proof: appSecretProof
+        access_token: accessToken
       };
+
+      // Only add appsecret_proof if we have it
+      if (appSecretProof) {
+        publishData.appsecret_proof = appSecretProof;
+      }
 
       const publishResponse = await axios.post(
         `https://graph.facebook.com/v23.0/${businessAccountId}/media_publish`,
