@@ -41,6 +41,15 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         clientSecret: '',
         accessToken: '',
         refreshToken: ''
+      },
+      zapier: {
+        enabled: false,
+        webhookUrl: '',
+        youtubeChannelId: ''
+      },
+      gemini: {
+        enabled: false,
+        apiKey: ''
       }
     };
 
@@ -78,7 +87,23 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   const [errors, setErrors] = useState({});
   const [activeTab, setActiveTab] = useState('facebook');
 
-  const requirements = getPlatformRequirements();
+  const requirements = {
+    ...getPlatformRequirements(),
+    zapier: {
+      required: ['webhookUrl', 'youtubeChannelId'],
+      optional: [],
+      permissions: ['webhook_access'],
+      setupUrl: 'https://zapier.com/apps/webhooks/integrations',
+      description: 'Zapier webhook for YouTube auto-posting'
+    },
+    gemini: {
+      required: ['apiKey'],
+      optional: [],
+      permissions: ['text_generation', 'image_generation'],
+      setupUrl: 'https://aistudio.google.com/app/apikey',
+      description: 'Google Gemini AI for content generation'
+    }
+  };
 
   // Convert field names to display names
   const getDisplayName = (field) => {
@@ -93,7 +118,9 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
       clientSecret: 'Client Secret',
       businessId: 'Business ID',
       apiKey: 'API Key',
-      channelId: 'Channel ID'
+      channelId: 'Channel ID',
+      webhookUrl: 'Zapier Webhook URL',
+      youtubeChannelId: 'YouTube Channel ID'
     };
     return displayNames[field] || field;
   };
@@ -380,7 +407,9 @@ Authorization code:`);
       instagram: '📸',
       linkedin: '💼',
       tiktok: '🎵',
-      youtube: '📺'
+      youtube: '📺',
+      zapier: '🔗',
+      gemini: '🤖'
     };
     return icons[platform] || '🔗';
   };
@@ -391,7 +420,9 @@ Authorization code:`);
       instagram: 'from-pink-500 to-purple-600',
       linkedin: 'from-blue-700 to-blue-800',
       tiktok: 'from-black to-gray-800',
-      youtube: 'from-red-600 to-red-700'
+      youtube: 'from-red-600 to-red-700',
+      zapier: 'from-orange-500 to-red-500',
+      gemini: 'from-blue-500 to-purple-600'
     };
     return colors[platform] || 'from-gray-600 to-gray-700';
   };
@@ -566,6 +597,66 @@ Authorization code:`);
                           ✅ YouTube authenticated successfully!
                         </p>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Gemini AI Integration */}
+                {platform === 'gemini' && config[platform].enabled && (
+                  <div className="mb-6">
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-4">
+                      <h4 className="font-bold text-blue-800 mb-2 flex items-center">
+                        <span className="mr-2">🤖</span>
+                        Google Gemini AI (Recommended)
+                      </h4>
+                      <p className="text-sm text-blue-700 mb-3">
+                        Gemini is FREE, reliable, and better than OpenAI! Perfect for AutoPromoter content generation.
+                      </p>
+                      <div className="bg-white p-3 rounded-lg border">
+                        <p className="text-sm font-mono text-gray-600 break-all">
+                          <strong>Benefits:</strong><br/>
+                          ✅ 100% FREE (no credit card required)<br/>
+                          ✅ 15 requests per minute<br/>
+                          ✅ Better than GPT-3.5<br/>
+                          ✅ More reliable than OpenAI<br/>
+                          ✅ Perfect for social media content
+                        </p>
+                      </div>
+                      <div className="mt-3 text-xs text-blue-600">
+                        <p>🎯 Primary AI for text generation</p>
+                        <p>🎨 Professional image placeholders</p>
+                        <p>🚀 No quota issues or billing problems</p>
+                        <p>💡 Auto-fallback to OpenAI if needed</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Zapier Integration for YouTube Auto-Posting */}
+                {platform === 'zapier' && config[platform].enabled && (
+                  <div className="mb-6">
+                    <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4 mb-4">
+                      <h4 className="font-bold text-orange-800 mb-2 flex items-center">
+                        <span className="mr-2">🔗</span>
+                        Zapier Integration (Perfect YouTube Solution)
+                      </h4>
+                      <p className="text-sm text-orange-700 mb-3">
+                        Connect AutoPromoter to Zapier for automatic YouTube posting. This is the most reliable method!
+                      </p>
+                      <div className="bg-white p-3 rounded-lg border">
+                        <p className="text-sm font-mono text-gray-600 break-all">
+                          <strong>How it works:</strong><br/>
+                          1. AutoPromoter sends content to Zapier webhook<br/>
+                          2. Zapier automatically posts to your YouTube channel<br/>
+                          3. No manual work required!
+                        </p>
+                      </div>
+                      <div className="mt-3 text-xs text-orange-600">
+                        <p>✅ 100% automatic posting</p>
+                        <p>✅ No YouTube API complexity</p>
+                        <p>✅ Works with all content types</p>
+                        <p>✅ Reliable and fast</p>
+                      </div>
                     </div>
                   </div>
                 )}

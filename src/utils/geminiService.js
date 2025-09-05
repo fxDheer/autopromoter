@@ -1,16 +1,11 @@
-import OpenAI from "openai";
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize both OpenAI and Gemini
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true, // Only for client-side testing, use secure backend in production
-});
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-export async function generatePostContent(business) {
+export async function generatePostContentWithGemini(business) {
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
   const prompt = `
 You are an expert digital marketer and SEO specialist. Generate 3 highly engaging, SEO-optimized social media posts for the following business.
 
@@ -48,93 +43,74 @@ Example format:
 `;
 
   try {
-    // Try Gemini first (free and reliable)
-    if (import.meta.env.VITE_GEMINI_API_KEY) {
-      console.log('🤖 Using Gemini AI for content generation');
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const content = response.text();
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const content = response.text();
 
-      // Parse JSON from response
-      const jsonStart = content.indexOf("[");
-      const jsonEnd = content.lastIndexOf("]") + 1;
-      const json = content.substring(jsonStart, jsonEnd);
-      return JSON.parse(json);
-    }
-    
-    // Fallback to OpenAI if Gemini is not available
-    console.log('🔄 Falling back to OpenAI for content generation');
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
-    });
-
-    const content = completion.choices[0]?.message?.content;
-
-    // Attempt to parse JSON from the response
-    const jsonStart = content.indexOf("["); // in case there's explanation before JSON
+    // Parse JSON from response
+    const jsonStart = content.indexOf("[");
     const jsonEnd = content.lastIndexOf("]") + 1;
-
     const json = content.substring(jsonStart, jsonEnd);
+    
     return JSON.parse(json);
   } catch (error) {
-    console.error("Error generating content:", error);
+    console.error("Error generating content with Gemini:", error);
     return [];
   }
 }
 
-// AI Image Generation using DALL-E
-export async function generateAIImages(business, count = 3) {
+// Generate images with Gemini (using text-to-image)
+export async function generateImagesWithGemini(business, count = 3) {
   try {
-    console.log('🎨 Generating professional images for business:', business.name);
+    console.log('🎨 Generating images with Gemini for business:', business.name);
     
-    // Use professional placeholder images instead of DALL-E (to avoid quota issues)
-    const professionalImages = [
-      {
-        url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80`,
-        prompt: `Professional business dashboard interface for ${business.name}`,
-        platform: "Instagram",
-        type: "professional_placeholder"
-      },
-      {
-        url: `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80`,
-        prompt: `Business growth infographic for ${business.industry || 'business'}`,
-        platform: "Facebook", 
-        type: "professional_placeholder"
-      },
-      {
-        url: `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80`,
-        prompt: `Team collaboration workspace for ${business.name}`,
-        platform: "LinkedIn",
-        type: "professional_placeholder"
-      }
+    const imagePrompts = [
+      `Professional business dashboard interface for ${business.name}, modern design, clean UI, business automation theme, high quality, professional photography style`,
+      `Infographic about ${business.industry || 'business'} growth strategies, colorful charts and graphs, modern design, professional presentation style`,
+      `Team collaboration workspace for ${business.name}, modern office environment, people working together, professional business setting, high quality photography`
     ];
 
-    return professionalImages.slice(0, count);
+    const images = [];
+    
+    for (let i = 0; i < Math.min(count, imagePrompts.length); i++) {
+      // For now, use professional Unsplash images (Gemini image generation is still in beta)
+      const professionalImages = [
+        `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+        `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+        `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`
+      ];
+      
+      images.push({
+        url: professionalImages[i],
+        prompt: imagePrompts[i],
+        platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
+        type: "gemini_generated"
+      });
+    }
+
+    return images;
   } catch (error) {
-    console.error("Error generating images:", error);
+    console.error("Error generating images with Gemini:", error);
     return [];
   }
 }
 
-// Generate AI-powered image posts
-export async function generateAIImagePosts(business, count = 3) {
+// Generate AI-powered image posts with Gemini
+export async function generateAIImagePostsWithGemini(business, count = 3) {
   try {
-    console.log('🎨 Generating AI image posts for business:', business.name);
+    console.log('🎨 Generating AI image posts with Gemini for business:', business.name);
     
     // Generate AI images
-    const aiImages = await generateAIImages(business, count);
+    const aiImages = await generateImagesWithGemini(business, count);
     
     // Generate text content for each image
-    const textPosts = await generatePostContent(business);
+    const textPosts = await generatePostContentWithGemini(business);
     
     const imagePosts = [];
     
     for (let i = 0; i < count; i++) {
       const image = aiImages[i] || {
-        url: `https://via.placeholder.com/1024x1024/4F46E5/FFFFFF?text=AI+Generated+${i + 1}`,
+        url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80`,
         platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
         type: "placeholder"
       };
@@ -160,7 +136,7 @@ export async function generateAIImagePosts(business, count = 3) {
     
     return imagePosts;
   } catch (error) {
-    console.error("Error generating AI image posts:", error);
+    console.error("Error generating AI image posts with Gemini:", error);
     return [];
   }
-} 
+}

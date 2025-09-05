@@ -318,14 +318,24 @@ export const autoPostToSocialMediaWithPlatformPosts = async (posts, apiConfig) =
     );
   }
   
-  // YouTube
+  // YouTube - Check for Zapier integration first
   if (apiConfig.youtube?.enabled && apiConfig.youtube?.apiKey && apiConfig.youtube?.channelId) {
     enabledPlatforms.push('youtube');
-    promises.push(
-      postToYouTube(posts[0], apiConfig)
-        .then(result => { results.youtube = result; })
-        .catch(error => { results.youtube = { success: false, error: error.message }; })
-    );
+    
+    // Use Zapier if configured, otherwise use direct API
+    if (apiConfig.zapier?.enabled && apiConfig.zapier?.webhookUrl) {
+      promises.push(
+        postToYouTubeViaZapier(posts[0], apiConfig.zapier.webhookUrl)
+          .then(result => { results.youtube = result; })
+          .catch(error => { results.youtube = { success: false, error: error.message }; })
+      );
+    } else {
+      promises.push(
+        postToYouTube(posts[0], apiConfig)
+          .then(result => { results.youtube = result; })
+          .catch(error => { results.youtube = { success: false, error: error.message }; })
+      );
+    }
   }
   
   console.log(`🔍 Found ${enabledPlatforms.length} enabled platform(s):`, enabledPlatforms);
@@ -579,6 +589,88 @@ export const testInstagramYouTube = async (apiConfig) => {
   }
 };
 
+// Zapier Integration for YouTube Auto-Posting
+export const sendToZapier = async (content, platforms, zapierWebhookUrl) => {
+  try {
+    console.log('🔗 Sending content to Zapier for YouTube auto-posting...');
+    
+    const zapierData = {
+      content: content.text,
+      title: content.title || content.text.substring(0, 100),
+      platforms: platforms,
+      timestamp: new Date().toISOString(),
+      source: 'AutoPromoter',
+      youtube: {
+        channelId: content.channelId || 'UCJTizV4ZC08VoalBEMf9MIg',
+        type: 'community_post',
+        hashtags: content.hashtags || [],
+        imageUrl: content.imageUrl || null
+      }
+    };
+
+    const response = await fetch(zapierWebhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(zapierData)
+    });
+
+    if (response.ok) {
+      console.log('✅ Content sent to Zapier successfully!');
+      return {
+        success: true,
+        message: 'Content sent to Zapier for YouTube auto-posting',
+        data: zapierData
+      };
+    } else {
+      throw new Error(`Zapier webhook failed: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('❌ Zapier integration failed:', error);
+    return {
+      success: false,
+      message: `Failed to send to Zapier: ${error.message}`,
+      error: error
+    };
+  }
+};
+
+// Enhanced YouTube posting with Zapier integration
+export const postToYouTubeViaZapier = async (content, zapierWebhookUrl) => {
+  try {
+    console.log('🎥 Posting to YouTube via Zapier...');
+    
+    const result = await sendToZapier(content, ['youtube'], zapierWebhookUrl);
+    
+    if (result.success) {
+      return {
+        success: true,
+        platform: 'YouTube',
+        message: 'YouTube post sent to Zapier for auto-posting!',
+        data: {
+          ...result.data,
+          instructions: 'Zapier will automatically post this to your YouTube channel',
+          zapierStatus: 'sent'
+        }
+      };
+    } else {
+      return {
+        success: false,
+        platform: 'YouTube',
+        error: result.message
+      };
+    }
+  } catch (error) {
+    console.error('❌ YouTube Zapier posting failed:', error);
+    return {
+      success: false,
+      platform: 'YouTube',
+      error: error.message
+    };
+  }
+};
+
 // Get platform requirements
 export const getPlatformRequirements = () => {
   return {
@@ -616,6 +708,13 @@ export const getPlatformRequirements = () => {
       permissions: ['https://www.googleapis.com/auth/youtube.upload'],
       setupUrl: 'https://developers.google.com/youtube/v3/getting-started',
       description: 'YouTube posting requires API key and channel access'
+    },
+    zapier: {
+      required: ['webhookUrl', 'youtubeChannelId'],
+      optional: [],
+      permissions: ['webhook_access'],
+      setupUrl: 'https://zapier.com/apps/webhooks/integrations',
+      description: 'Zapier webhook for YouTube auto-posting'
     }
   };
 }; 

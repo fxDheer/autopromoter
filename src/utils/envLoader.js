@@ -7,6 +7,9 @@ export const loadEnvironmentVariables = () => {
     openai: {
       apiKey: import.meta.env.VITE_OPENAI_API_KEY || ''
     },
+    gemini: {
+      apiKey: import.meta.env.VITE_GEMINI_API_KEY || ''
+    },
     facebook: {
       appId: import.meta.env.VITE_FACEBOOK_APP_ID || '',
       appSecret: import.meta.env.VITE_FACEBOOK_APP_SECRET || '',
@@ -64,6 +67,7 @@ export const loadEnvironmentVariables = () => {
   console.log('Environment variables loaded:', hasEnvApiKeys ? 'Yes' : 'No');
   console.log('Manual API config found:', hasManualApiKeys ? 'Yes' : 'No');
   console.log('OpenAI API Key loaded:', config.openai.apiKey ? 'Yes' : 'No');
+  console.log('Gemini API Key loaded:', config.gemini.apiKey ? 'Yes' : 'No');
   console.log('Facebook API loaded:', config.facebook.appId ? 'Yes' : 'No');
   console.log('Instagram API loaded:', config.instagram.appId ? 'Yes' : 'No');
   console.log('YouTube API loaded:', config.youtube.apiKey ? 'Yes' : 'No');
@@ -118,4 +122,5 @@ export const convertToApiConfig = (envConfig) => {
     }
   };
 };
+
 

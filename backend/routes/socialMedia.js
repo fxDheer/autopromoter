@@ -299,14 +299,23 @@ const youtubeService = {
         return {
           success: true,
           platform: 'YouTube',
-          message: 'YouTube post prepared for RSS feed',
+          message: 'YouTube content prepared for manual posting',
           data: { 
             channelId: channelId, 
             content: content.text,
-            type: 'rss_feed',
-            note: 'YouTube RSS feed method - no authentication required',
-            instructions: 'Configure your YouTube channel to use this RSS feed: https://autopromoter-autopromoter.up.railway.app/api/social-media/youtube/rss',
-            rssFeedUrl: 'https://autopromoter-autopromoter.up.railway.app/api/social-media/youtube/rss'
+            type: 'manual_posting',
+            note: 'YouTube RSS feeds are no longer supported. Please post manually.',
+            instructions: 'Copy the content below and post it manually to your YouTube channel:',
+            contentToPost: content.text,
+            title: content.title || content.text.substring(0, 100),
+            url: `https://www.youtube.com/channel/${channelId}/community`,
+            steps: [
+              '1. Go to your YouTube channel',
+              '2. Click "Community" tab',
+              '3. Click "Create post"',
+              '4. Copy and paste the content below',
+              '5. Click "Post"'
+            ]
           }
         };
       }

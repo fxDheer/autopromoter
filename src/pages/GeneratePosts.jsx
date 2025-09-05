@@ -6,6 +6,7 @@ import ClientSelector from "../components/ClientSelector";
 import { autoPostToSocialMediaWithPlatformPosts, validateApiKeys } from "../utils/socialMediaService";
 import autoLearningService from "../utils/autoLearningService";
 import { loadEnvironmentVariables, convertToApiConfig } from "../utils/envLoader";
+import { generateAIImagePosts } from "../utils/openaiService";
 
 const GeneratePosts = () => {
   const navigate = useNavigate();
@@ -232,30 +233,40 @@ const GeneratePosts = () => {
           }
         ];
       } else if (contentType === 'image') {
-        newPosts = [
-          {
-            text: "📸 NEW: Our revolutionary business automation dashboard! See how easy it is to manage everything in one place! 🎯 #Dashboard #Automation #BusinessTools",
-            platform: "Instagram",
-            type: "image",
-            imageUrl: "https://via.placeholder.com/600x600/FF6B6B/FFFFFF?text=Dashboard+Preview"
-          },
-          {
-            text: "🖼️ Infographic: The Ultimate Guide to Business Growth in 2024! Save and share with your team! 📊 #Infographic #BusinessGrowth #2024",
-            platform: "Facebook",
-            type: "image",
-            imageUrl: "https://via.placeholder.com/800x600/4ECDC4/FFFFFF?text=Growth+Infographic"
-          },
-          {
-            text: "📱 Carousel Post: 5 Steps to Automate Your Business Today! Swipe through to see each step! 🔄 #Carousel #Automation #BusinessSteps",
-            platform: "Instagram",
-            type: "carousel",
-            images: [
-              "https://via.placeholder.com/600x600/FF6B6B/FFFFFF?text=Step+1",
-              "https://via.placeholder.com/600x600/4ECDC4/FFFFFF?text=Step+2",
-              "https://via.placeholder.com/600x600/45B7D1/FFFFFF?text=Step+3"
-            ]
-          }
-        ];
+        // Use AI to generate image posts
+        try {
+          newPosts = await generateAIImagePosts(business, 3);
+        } catch (error) {
+          console.error('AI image generation failed, using fallback:', error);
+          // Fallback to placeholder images if AI fails
+          newPosts = [
+            {
+              text: "📸 NEW: Our revolutionary business automation dashboard! See how easy it is to manage everything in one place! 🎯 #Dashboard #Automation #BusinessTools",
+              platform: "Instagram",
+              type: "image",
+              imageUrl: "https://via.placeholder.com/600x600/FF6B6B/FFFFFF?text=Dashboard+Preview",
+              aiGenerated: false
+            },
+            {
+              text: "🖼️ Infographic: The Ultimate Guide to Business Growth in 2024! Save and share with your team! 📊 #Infographic #BusinessGrowth #2024",
+              platform: "Facebook",
+              type: "image",
+              imageUrl: "https://via.placeholder.com/800x600/4ECDC4/FFFFFF?text=Growth+Infographic",
+              aiGenerated: false
+            },
+            {
+              text: "📱 Carousel Post: 5 Steps to Automate Your Business Today! Swipe through to see each step! 🔄 #Carousel #Automation #BusinessSteps",
+              platform: "Instagram",
+              type: "carousel",
+              images: [
+                "https://via.placeholder.com/600x600/FF6B6B/FFFFFF?text=Step+1",
+                "https://via.placeholder.com/600x600/4ECDC4/FFFFFF?text=Step+2",
+                "https://via.placeholder.com/600x600/45B7D1/FFFFFF?text=Step+3"
+              ],
+              aiGenerated: false
+            }
+          ];
+        }
       }
       
       setPosts(newPosts);
@@ -919,12 +930,27 @@ const GeneratePosts = () => {
                       
                       {post.type === 'image' && (
                         <div className="mb-4">
-                          <img 
-                            src={post.imageUrl} 
-                            alt="Post image" 
-                            className="w-full rounded-xl mb-4"
-                          />
+                          <div className="relative">
+                            <img 
+                              src={post.imageUrl} 
+                              alt="Post image" 
+                              className="w-full rounded-xl mb-4"
+                            />
+                            {post.aiGenerated && (
+                              <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                                <span className="mr-1">🎨</span>
+                                AI Generated
+                              </div>
+                            )}
+                          </div>
                           <p className="text-white text-lg leading-relaxed">{post.text}</p>
+                          {post.prompt && (
+                            <div className="mt-2 p-3 bg-purple-500/20 rounded-lg">
+                              <p className="text-purple-200 text-sm">
+                                <strong>AI Prompt:</strong> {post.prompt}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
                       
