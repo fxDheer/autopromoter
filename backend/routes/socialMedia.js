@@ -125,18 +125,17 @@ const instagramService = {
 
       console.log('📸 Instagram: Media type determined:', mediaType);
 
-      // Generate app secret proof
+      // Generate app secret proof (optional for Instagram)
       const appSecretProof = generateAppSecretProof(accessToken, appSecret);
       
       if (!appSecretProof) {
-        console.error('📸 Instagram: Failed to generate app secret proof');
-        console.error('📸 Instagram: Access token length:', accessToken?.length || 0);
-        console.error('📸 Instagram: App secret length:', appSecret?.length || 0);
-        throw new Error('Failed to generate app secret proof. Please check your app secret.');
+        console.warn('📸 Instagram: App secret proof generation failed, proceeding without it');
+        console.warn('📸 Instagram: Access token length:', accessToken?.length || 0);
+        console.warn('📸 Instagram: App secret length:', appSecret?.length || 0);
+      } else {
+        console.log('📸 Instagram: App secret proof generated successfully');
+        console.log('📸 Instagram: App secret proof length:', appSecretProof.length);
       }
-
-      console.log('📸 Instagram: App secret proof generated successfully');
-      console.log('📸 Instagram: App secret proof length:', appSecretProof.length);
 
       // Create media container with correct API version (v23.0)
       const mediaData = {
