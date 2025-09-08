@@ -105,6 +105,14 @@ Generate completely unique content for each post. Avoid repetition. Follow all f
       console.log('✅ Successfully parsed AI posts:', parsed);
       return parsed;
     }
+  } catch (error) {
+    if (error.message.includes('quota') || error.message.includes('429')) {
+      console.warn('⚠️ Gemini quota exceeded, using fallback content generation');
+    } else {
+      console.error('❌ Gemini error:', error);
+    }
+    // Fall through to fallback content generation
+  }
     
     // Fallback to OpenAI if Gemini is not available
     if (openai) {
@@ -185,12 +193,16 @@ export async function generateAIImages(business, count = 3) {
           industry: business.industry || 'business'
         });
       } catch (error) {
-        console.warn('Gemini image generation failed for prompt', i, error);
+        if (error.message.includes('quota') || error.message.includes('429')) {
+          console.warn('⚠️ Gemini quota exceeded for image generation, using fallback');
+        } else {
+          console.warn('Gemini image generation failed for prompt', i, error);
+        }
         // Fallback to professional images with original prompts
         const professionalImages = [
-          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`
+          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
+          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
+          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`
         ];
         
         images.push({
@@ -299,7 +311,11 @@ CRITICAL RULES:
           }
         });
       } catch (error) {
-        console.warn('Gemini text generation failed for image', i, error);
+        if (error.message.includes('quota') || error.message.includes('429')) {
+          console.warn('⚠️ Gemini quota exceeded for text generation, using fallback');
+        } else {
+          console.warn('Gemini text generation failed for image', i, error);
+        }
         // Fallback text
         const fallbackText = `🎨 AI-Generated Visual Content for ${business.name}! Check out this amazing visual representation of our ${business.industry || 'business'}! 🚀 #AIGenerated #VisualContent #BusinessMarketing #${business.industry || 'Business'} #Innovation #DigitalMarketing #Creative #Professional #Modern #Tech`;
         

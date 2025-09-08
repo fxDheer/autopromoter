@@ -6,7 +6,7 @@ import ClientSelector from "../components/ClientSelector";
 import { autoPostToSocialMediaWithPlatformPosts, validateApiKeys } from "../utils/socialMediaService";
 import autoLearningService from "../utils/autoLearningService";
 import { loadEnvironmentVariables, convertToApiConfig } from "../utils/envLoader";
-import { generateAIImagePosts } from "../utils/openaiService";
+import { generateAIImagePosts, generatePostContent } from "../utils/openaiService";
 
 const GeneratePosts = () => {
   const navigate = useNavigate();
