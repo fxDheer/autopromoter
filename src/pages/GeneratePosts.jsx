@@ -286,8 +286,15 @@ const GeneratePosts = () => {
     try {
       console.log('🔄 Generated fresh posts with anti-repetition logic:', businessData);
       
+      // Use current business state if businessData is null
+      const currentBusiness = businessData || business;
+      if (!currentBusiness || !currentBusiness.name) {
+        console.warn('⚠️ No business data available, using fallback');
+        return [];
+      }
+      
       // Use AI service to generate truly fresh content
-      const aiPosts = await generatePostContent(businessData);
+      const aiPosts = await generatePostContent(currentBusiness);
       console.log('🤖 AI Generated posts:', aiPosts);
       
       if (aiPosts && aiPosts.length > 0) {
@@ -316,9 +323,18 @@ const GeneratePosts = () => {
       const randomElement = randomElements[Math.floor(Math.random() * randomElements.length)];
       const randomAction = randomElements[Math.floor(Math.random() * randomElements.length)];
       
+      // Use current business data for personalization
+      const businessName = currentBusiness?.name || "Auto Digital Promoter";
+      const industry = currentBusiness?.industry || "business";
+      
       return {
         ...baseTemplate,
-        text: baseTemplate.text.replace("🚀", randomElement).replace("transform", randomAction),
+        text: baseTemplate.text
+          .replace("🚀", randomElement)
+          .replace("transform", randomAction)
+          .replace(/Our platform/g, `${businessName}`)
+          .replace(/Our automation/g, `${businessName}'s automation`)
+          .replace(/business/g, industry),
         id: `${platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: Date.now()
       };
