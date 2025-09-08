@@ -1,11 +1,17 @@
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize both OpenAI and Gemini
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true, // Only for client-side testing, use secure backend in production
-});
+// Initialize both OpenAI and Gemini with fallback
+let openai;
+try {
+  openai = new OpenAI({
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY || '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',
+    dangerouslyAllowBrowser: true, // Only for client-side testing, use secure backend in production
+  });
+} catch (error) {
+  console.warn('OpenAI initialization failed:', error);
+  openai = null;
+}
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0');
@@ -64,21 +70,33 @@ Example format:
     }
     
     // Fallback to OpenAI if Gemini is not available
-    console.log('🔄 Falling back to OpenAI for content generation');
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
-    });
+    if (openai) {
+      console.log('🔄 Falling back to OpenAI for content generation');
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.8,
+      });
 
-    const content = completion.choices[0]?.message?.content;
+      const content = completion.choices[0]?.message?.content;
 
-    // Attempt to parse JSON from the response
-    const jsonStart = content.indexOf("["); // in case there's explanation before JSON
-    const jsonEnd = content.lastIndexOf("]") + 1;
+      // Attempt to parse JSON from the response
+      const jsonStart = content.indexOf("["); // in case there's explanation before JSON
+      const jsonEnd = content.lastIndexOf("]") + 1;
 
-    const json = content.substring(jsonStart, jsonEnd);
-    return JSON.parse(json);
+      const json = content.substring(jsonStart, jsonEnd);
+      return JSON.parse(json);
+    } else {
+      console.log('🔄 Using fallback content generation');
+      // Return default content if both AI services fail
+      return [
+        {
+          text: `🚀 ${business.name} is revolutionizing the ${business.industry || 'business'} industry! Our innovative solutions help ${business.audience || 'professionals'} achieve amazing results. Ready to transform your business? 💡 #BusinessGrowth #Innovation #Success #${business.industry || 'Business'} #Professional #Results #Transformation #Excellence #Leadership #Future`,
+          platform: "Instagram",
+          hashtags: ["BusinessGrowth", "Innovation", "Success", business.industry || "Business", "Professional", "Results", "Transformation", "Excellence", "Leadership", "Future"]
+        }
+      ];
+    }
   } catch (error) {
     console.error("Error generating content:", error);
     return [];
