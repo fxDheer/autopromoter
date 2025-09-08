@@ -207,7 +207,7 @@ const GeneratePosts = () => {
       let newPosts = [];
       
       if (contentType === 'text') {
-        newPosts = generateFreshPosts(business);
+        newPosts = await generateFreshPosts(business);
       } else if (contentType === 'video') {
         newPosts = [
           {
@@ -279,9 +279,28 @@ const GeneratePosts = () => {
     }
   };
 
-  // Generate completely fresh posts with enhanced randomization
-  const generateFreshPosts = (businessData) => {
-    // Create dynamic post templates with random elements
+  // Generate completely fresh posts using AI (Gemini)
+  const generateFreshPosts = async (businessData) => {
+    try {
+      console.log('🔄 Generated fresh posts with anti-repetition logic:', businessData);
+      
+      // Use AI service to generate truly fresh content
+      const aiPosts = await generatePostContent(businessData);
+      
+      if (aiPosts && aiPosts.length > 0) {
+        // Add unique IDs and timestamps to prevent repetition
+        return aiPosts.map((post, index) => ({
+          ...post,
+          id: `${post.platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: Date.now() + index,
+          type: "text"
+        }));
+      }
+    } catch (error) {
+      console.error('Error generating AI posts:', error);
+    }
+    
+    // Fallback to dynamic templates if AI fails
     const createDynamicPost = (baseTemplate, platform) => {
       const randomElements = [
         "🚀", "⚡", "💡", "🎯", "🔥", "🌟", "💪", "🎉", "📈", "🚀",
@@ -556,7 +575,7 @@ const GeneratePosts = () => {
       localStorage.removeItem(`autopromoter_recent_posts_${currentClient}`);
       
       // Immediately generate fresh posts after clearing
-      const freshPosts = generateFreshPosts(business);
+      const freshPosts = await generateFreshPosts(business);
       setPosts(freshPosts);
       alert(`✅ All recent posts cleared for ${currentClient}! Completely fresh posts generated.`);
     } catch (error) {
@@ -577,7 +596,7 @@ const GeneratePosts = () => {
       setApiConfig(parsed.apiConfig);
       
       // Generate fresh posts for this client
-      const freshPosts = generateFreshPosts(parsed.businessData);
+      const freshPosts = await generateFreshPosts(parsed.businessData);
       setPosts(freshPosts);
     }
   };
@@ -622,7 +641,7 @@ const GeneratePosts = () => {
         }
         
         // Generate fresh posts with different hashtags every time
-        const freshPosts = generateFreshPosts(business);
+        const freshPosts = await generateFreshPosts(business);
         setPosts(freshPosts);
       } catch (error) {
         console.error("Error fetching or generating:", error);

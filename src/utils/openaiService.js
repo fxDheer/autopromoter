@@ -17,14 +17,26 @@ try {
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0');
 
 export async function generatePostContent(business) {
+  // Add timestamp and random elements to ensure uniqueness
+  const timestamp = Date.now();
+  const randomSeed = Math.random().toString(36).substring(7);
+  
   const prompt = `
-You are an expert digital marketer and SEO specialist. Generate 3 highly engaging, SEO-optimized social media posts for the following business.
+You are an expert digital marketer and SEO specialist. Generate 3 highly engaging, SEO-optimized social media posts for the following business. Make each post completely unique and different from the others.
 
 Business Name: ${business.name}
 Description: ${business.description}
 Website: ${business.url}
 Audience: ${business.audience}
 Keywords: ${business.keywords}
+Industry: ${business.industry || 'business'}
+
+IMPORTANT: Each post must be completely different in:
+- Opening hook/emoji
+- Main message angle
+- Call-to-action approach
+- Problem/solution focus
+- Emotional tone
 
 Requirements for each post:
 1. Content should be meaningful, valuable, and solve real problems for the target audience
@@ -34,8 +46,9 @@ Requirements for each post:
 5. Keep within platform limits (280 chars for Twitter, 2200 for Instagram, etc.)
 6. Focus on SEO keywords naturally integrated into the content
 7. Make content shareable and engaging
+8. Each post should have a different angle: one about problems, one about solutions, one about results
 
-Hashtag Strategy:
+Hashtag Strategy (make each post's hashtags different):
 - 3-4 popular industry hashtags (#BusinessGrowth, #Innovation, etc.)
 - 3-4 niche/specific hashtags related to the business
 - 2-3 trending/relevant hashtags
@@ -51,6 +64,8 @@ Example format:
     "hashtags": ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"]
   }
 ]
+
+Generate completely unique content for each post. Avoid repetition.
 `;
 
   try {
@@ -238,7 +253,14 @@ export async function generateAIImagePosts(business, count = 3) {
           business: business.name,
           industry: business.industry || 'business',
           createdAt: new Date().toISOString(),
-          businessId: business.id || 'demo'
+          businessId: business.id || 'demo',
+          // Ensure proper structure for backend
+          content: {
+            text: generatedText,
+            type: "image",
+            imageUrl: image.url,
+            platform: image.platform
+          }
         });
       } catch (error) {
         console.warn('Gemini text generation failed for image', i, error);
@@ -256,7 +278,14 @@ export async function generateAIImagePosts(business, count = 3) {
           business: business.name,
           industry: business.industry || 'business',
           createdAt: new Date().toISOString(),
-          businessId: business.id || 'demo'
+          businessId: business.id || 'demo',
+          // Ensure proper structure for backend
+          content: {
+            text: fallbackText,
+            type: "image",
+            imageUrl: image.url,
+            platform: image.platform
+          }
         });
       }
     }
