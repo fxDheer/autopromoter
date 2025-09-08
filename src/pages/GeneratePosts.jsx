@@ -561,7 +561,7 @@ const GeneratePosts = () => {
     setTimeout(() => handleGenerateMore(), 100);
   };
 
-  const handleClearRecentPosts = () => {
+  const handleClearRecentPosts = async () => {
     try {
       // Clear all session storage for this client
       const keys = Object.keys(sessionStorage);
@@ -584,7 +584,7 @@ const GeneratePosts = () => {
     }
   };
 
-  const handleClientChange = (clientId) => {
+  const handleClientChange = async (clientId) => {
     setCurrentClient(clientId);
     localStorage.setItem('autopromoter_current_client', clientId);
     
