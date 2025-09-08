@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { SOCIAL_MEDIA_RULES, applySocialMediaRules, validateContent } from './socialMediaRules';
 
 // Initialize both OpenAI and Gemini with fallback
 let openai;
@@ -31,6 +32,15 @@ Audience: ${business.audience}
 Keywords: ${business.keywords}
 Industry: ${business.industry || 'business'}
 
+CRITICAL SOCIAL MEDIA RULES TO FOLLOW:
+1. NEVER use **text** or *text* for bold/italic formatting - social media doesn't support markdown
+2. NEVER include [Insert Image here] or [Link to website] placeholders in final posts
+3. NEVER include text in parentheses or brackets within the main content
+4. Use clean, continuous text without formatting interruptions
+5. Place all hashtags at the end, separated by spaces
+6. Use 2-4 strategic emojis, not excessive amounts
+7. Keep sentences short and punchy for better readability
+
 IMPORTANT: Each post must be completely different in:
 - Opening hook/emoji
 - Main message angle
@@ -56,16 +66,16 @@ Hashtag Strategy (make each post's hashtags different):
 
 Return as a JSON array with fields: text, platform, hashtags (array of 10 hashtags).
 
-Example format:
+Example format (NO MARKDOWN FORMATTING):
 [
   {
-    "text": "🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. 💡 Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation",
+    "text": "🚀 Tired of spending hours on manual tasks? Our AI-powered automation saves you 10+ hours weekly! Stop working harder, start working smarter. Ready to transform your workflow? #BusinessAutomation #ProductivityHacks #TimeManagement #AI #WorkflowOptimization #BusinessGrowth #Efficiency #DigitalTransformation #SmartBusiness #Innovation",
     "platform": "Instagram",
     "hashtags": ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"]
   }
 ]
 
-Generate completely unique content for each post. Avoid repetition.
+Generate completely unique content for each post. Avoid repetition. Follow all formatting rules strictly.
 `;
 
   try {
@@ -127,10 +137,11 @@ export async function generateAIImages(business, count = 3) {
     console.log('🤖 Using Gemini for enhanced image generation');
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
+    // Generate content-aware image prompts that match specific post types
     const imagePrompts = [
-      `Create a professional business dashboard interface for ${business.name}, modern design, clean UI, business automation theme, high quality, professional photography style`,
-      `Design an infographic about ${business.industry || 'business'} growth strategies, colorful charts and graphs, modern design, professional presentation style`,
-      `Generate a team collaboration workspace for ${business.name}, modern office environment, people working together, professional business setting, high quality photography`
+      `Create a detailed infographic about ${business.industry || 'business'} growth strategies with specific data points, charts showing market penetration, revenue growth, and key metrics. Professional data visualization style with clear, readable text and numbers.`,
+      `Design a business analytics dashboard for ${business.name} showing real performance metrics, KPI charts, and data insights. Clean, modern interface with actual business data visualization, not generic placeholder content.`,
+      `Generate a professional business process workflow diagram for ${business.industry || 'business'} automation, showing step-by-step processes, decision points, and outcomes. Clear, actionable visual representation.`
     ];
 
     const images = [];
@@ -231,7 +242,16 @@ export async function generateAIImagePosts(business, count = 3) {
       // Generate specific text content for each image using Gemini
       try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const imagePrompt = `Create engaging social media post text for ${business.name} (${business.industry || 'business'}) with this image: ${image.prompt}. Include 10 relevant hashtags and make it engaging for ${image.platform}.`;
+        const imagePrompt = `Create engaging social media post text for ${business.name} (${business.industry || 'business'}) that perfectly matches this specific image: ${image.prompt}. 
+
+CRITICAL RULES:
+1. The text must directly reference what's shown in the image (infographic, dashboard, data, etc.)
+2. If the image shows an infographic, mention specific data points or insights from it
+3. If the image shows a dashboard, reference the metrics or analytics shown
+4. NEVER use **text** or *text* formatting
+5. Include exactly 10 relevant hashtags
+6. Make it engaging for ${image.platform}
+7. Ensure the text and image are perfectly aligned in content and context`;
         
         const result = await model.generateContent(imagePrompt);
         const response = await result.response;
