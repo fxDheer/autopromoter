@@ -287,7 +287,15 @@ const GeneratePosts = () => {
       console.log('🔄 Generated fresh posts with anti-repetition logic:', businessData);
       
       // Use current business state if businessData is null
-      const currentBusiness = businessData || business;
+      const currentBusiness = businessData || business || {
+        name: "Auto Digital Promoter",
+        url: "https://autopromoter.vercel.app/",
+        description: "Auto Digital Promoter",
+        audience: "IT, Zenz, Social media",
+        keywords: "Digital Marketing, Social Media",
+        industry: "business"
+      };
+      
       if (!currentBusiness || !currentBusiness.name) {
         console.warn('⚠️ No business data available, using fallback');
         return [];
