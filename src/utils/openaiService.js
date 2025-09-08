@@ -80,18 +80,30 @@ Generate completely unique content for each post. Avoid repetition. Follow all f
 
   try {
     // Try Gemini first (free and reliable)
-    if (import.meta.env.VITE_GEMINI_API_KEY) {
+    if (import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0') {
       console.log('🤖 Using Gemini AI for content generation');
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const content = response.text();
+      
+      console.log('🤖 Gemini response:', content);
 
       // Parse JSON from response
       const jsonStart = content.indexOf("[");
       const jsonEnd = content.lastIndexOf("]") + 1;
+      
+      if (jsonStart === -1 || jsonEnd === 0) {
+        console.error('❌ No JSON found in Gemini response');
+        throw new Error('Invalid JSON response from Gemini');
+      }
+      
       const json = content.substring(jsonStart, jsonEnd);
-      return JSON.parse(json);
+      console.log('🤖 Parsed JSON:', json);
+      
+      const parsed = JSON.parse(json);
+      console.log('✅ Successfully parsed AI posts:', parsed);
+      return parsed;
     }
     
     // Fallback to OpenAI if Gemini is not available
@@ -137,6 +149,10 @@ export async function generateAIImages(business, count = 3) {
     console.log('🤖 Using Gemini for enhanced image generation');
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
+    // Add timestamp to ensure uniqueness
+    const timestamp = Date.now();
+    const randomSeed = Math.random().toString(36).substring(7);
+    
     // Generate content-aware image prompts that match specific post types
     const imagePrompts = [
       `Create a detailed infographic about ${business.industry || 'business'} growth strategies with specific data points, charts showing market penetration, revenue growth, and key metrics. Professional data visualization style with clear, readable text and numbers.`,
@@ -153,11 +169,11 @@ export async function generateAIImages(business, count = 3) {
         const response = await result.response;
         const enhancedPrompt = response.text();
         
-        // Use Gemini-enhanced prompts to select better Unsplash images
+        // Use Gemini-enhanced prompts to select better Unsplash images with unique timestamps
         const professionalImages = [
-          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`
+          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
+          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
+          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`
         ];
         
         images.push({

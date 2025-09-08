@@ -233,25 +233,27 @@ const GeneratePosts = () => {
           }
         ];
       } else if (contentType === 'image') {
-        // Use AI to generate image posts
+        // Use AI to generate image posts with fresh content
         try {
+          console.log('🎨 Generating fresh AI image posts...');
           newPosts = await generateAIImagePosts(business, 3);
+          console.log('✅ AI image posts generated:', newPosts);
         } catch (error) {
-          console.error('AI image generation failed, using fallback:', error);
+          console.error('❌ AI image generation failed, using fallback:', error);
           // Fallback to placeholder images if AI fails
           newPosts = [
             {
               text: "📸 NEW: Our revolutionary business automation dashboard! See how easy it is to manage everything in one place! 🎯 #Dashboard #Automation #BusinessTools",
               platform: "Instagram",
               type: "image",
-              imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=600&fit=crop&crop=center&auto=format&q=80",
+              imageUrl: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=600&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
               aiGenerated: false
             },
             {
               text: "🖼️ Infographic: The Ultimate Guide to Business Growth in 2024! Save and share with your team! 📊 #Infographic #BusinessGrowth #2024",
               platform: "Facebook",
               type: "image",
-              imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&crop=center&auto=format&q=80",
+              imageUrl: `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
               aiGenerated: false
             },
             {
@@ -286,8 +288,10 @@ const GeneratePosts = () => {
       
       // Use AI service to generate truly fresh content
       const aiPosts = await generatePostContent(businessData);
+      console.log('🤖 AI Generated posts:', aiPosts);
       
       if (aiPosts && aiPosts.length > 0) {
+        console.log('✅ Using AI-generated posts');
         // Add unique IDs and timestamps to prevent repetition
         return aiPosts.map((post, index) => ({
           ...post,
@@ -295,9 +299,11 @@ const GeneratePosts = () => {
           timestamp: Date.now() + index,
           type: "text"
         }));
+      } else {
+        console.warn('⚠️ AI posts empty, falling back to templates');
       }
     } catch (error) {
-      console.error('Error generating AI posts:', error);
+      console.error('❌ Error generating AI posts:', error);
     }
     
     // Fallback to dynamic templates if AI fails
