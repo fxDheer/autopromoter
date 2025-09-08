@@ -173,12 +173,54 @@ export async function generateAIImages(business, count = 3) {
         const response = await result.response;
         const enhancedPrompt = response.text();
         
-        // Use Gemini-enhanced prompts to select better Unsplash images with unique timestamps
-        const professionalImages = [
-          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
-          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
-          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`
-        ];
+        // Use diverse Unsplash images with unique timestamps and random selection
+        const imageCollections = {
+          business: [
+            'photo-1551288049-bebda4e38f71', // Business dashboard
+            'photo-1460925895917-afdab827c52f', // Analytics
+            'photo-1522071820081-009f0129c71c', // Team collaboration
+            'photo-1507003211169-0a1dd7228f2d', // Business meeting
+            'photo-1551434678-e076c223a692', // Business strategy
+            'photo-1554224155-6726b3ff858f', // Business growth
+            'photo-1552664730-d307ca884978', // Business success
+            'photo-1553877522-43269d4ea984', // Business technology
+            'photo-1559136555-9303baea8ebd', // Business innovation
+            'photo-1559136555-9303baea8ebd'  // Business efficiency
+          ],
+          technology: [
+            'photo-1518709268805-4e9042af2176', // Tech dashboard
+            'photo-1551288049-bebda4e38f71', // Data visualization
+            'photo-1460925895917-afdab827c52f', // Analytics
+            'photo-1522071820081-009f0129c71c', // Team work
+            'photo-1507003211169-0a1dd7228f2d', // Modern office
+            'photo-1551434678-e076c223a692', // Strategy
+            'photo-1554224155-6726b3ff858f', // Growth
+            'photo-1552664730-d307ca884978', // Success
+            'photo-1553877522-43269d4ea984', // Technology
+            'photo-1559136555-9303baea8ebd'  // Innovation
+          ],
+          marketing: [
+            'photo-1551288049-bebda4e38f71', // Marketing dashboard
+            'photo-1460925895917-afdab827c52f', // Marketing analytics
+            'photo-1522071820081-009f0129c71c', // Marketing team
+            'photo-1507003211169-0a1dd7228f2d', // Marketing meeting
+            'photo-1551434678-e076c223a692', // Marketing strategy
+            'photo-1554224155-6726b3ff858f', // Marketing growth
+            'photo-1552664730-d307ca884978', // Marketing success
+            'photo-1553877522-43269d4ea984', // Marketing tech
+            'photo-1559136555-9303baea8ebd', // Marketing innovation
+            'photo-1559136555-9303baea8ebd'  // Marketing efficiency
+          ]
+        };
+        
+        // Select random images based on business industry
+        const industry = currentBusiness?.industry?.toLowerCase() || 'business';
+        const collection = imageCollections[industry] || imageCollections.business;
+        const randomImages = collection.sort(() => Math.random() - 0.5).slice(0, 3);
+        
+        const professionalImages = randomImages.map((photoId, idx) => 
+          `https://images.unsplash.com/${photoId}?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}_${idx}_${Math.random().toString(36).substr(2, 5)}`
+        );
         
         images.push({
           url: professionalImages[i],
@@ -194,12 +236,25 @@ export async function generateAIImages(business, count = 3) {
         } else {
           console.warn('Gemini image generation failed for prompt', i, error);
         }
-        // Fallback to professional images with original prompts
-        const professionalImages = [
-          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
-          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`,
-          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}`
+        // Fallback to diverse professional images with random selection
+        const fallbackImages = [
+          'photo-1551288049-bebda4e38f71', // Business dashboard
+          'photo-1460925895917-afdab827c52f', // Analytics
+          'photo-1522071820081-009f0129c71c', // Team collaboration
+          'photo-1507003211169-0a1dd7228f2d', // Business meeting
+          'photo-1551434678-e076c223a692', // Business strategy
+          'photo-1554224155-6726b3ff858f', // Business growth
+          'photo-1552664730-d307ca884978', // Business success
+          'photo-1553877522-43269d4ea984', // Business technology
+          'photo-1518709268805-4e9042af2176', // Tech dashboard
+          'photo-1559136555-9303baea8ebd'  // Business innovation
         ];
+        
+        // Shuffle and select random images
+        const shuffledImages = fallbackImages.sort(() => Math.random() - 0.5);
+        const professionalImages = shuffledImages.slice(0, 3).map((photoId, idx) => 
+          `https://images.unsplash.com/${photoId}?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}_${idx}_${Math.random().toString(36).substr(2, 5)}`
+        );
         
         images.push({
           url: professionalImages[i],
@@ -214,30 +269,35 @@ export async function generateAIImages(business, count = 3) {
     
     return images;
     
-    // Fallback to professional images if Gemini not available
-    console.log('🔄 Falling back to professional images');
-    const professionalImages = [
-      {
-        url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-        prompt: `Professional business dashboard interface for ${business.name}`,
-        platform: "Instagram",
-        type: "professional_placeholder"
-      },
-      {
-        url: `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-        prompt: `Business growth infographic for ${business.industry || 'business'}`,
-        platform: "Facebook", 
-        type: "professional_placeholder"
-      },
-      {
-        url: `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-        prompt: `Team collaboration workspace for ${business.name}`,
-        platform: "LinkedIn",
-        type: "professional_placeholder"
-      }
+    // Fallback to diverse professional images if Gemini not available
+    console.log('🔄 Falling back to diverse professional images');
+    const fallbackImageIds = [
+      'photo-1551288049-bebda4e38f71', // Business dashboard
+      'photo-1460925895917-afdab827c52f', // Analytics
+      'photo-1522071820081-009f0129c71c', // Team collaboration
+      'photo-1507003211169-0a1dd7228f2d', // Business meeting
+      'photo-1551434678-e076c223a692', // Business strategy
+      'photo-1554224155-6726b3ff858f', // Business growth
+      'photo-1552664730-d307ca884978', // Business success
+      'photo-1553877522-43269d4ea984', // Business technology
+      'photo-1518709268805-4e9042af2176', // Tech dashboard
+      'photo-1559136555-9303baea8ebd'  // Business innovation
     ];
+    
+    // Shuffle and select random images
+    const shuffledIds = fallbackImageIds.sort(() => Math.random() - 0.5);
+    const platforms = ["Instagram", "Facebook", "LinkedIn"];
+    
+    const professionalImages = shuffledIds.slice(0, count).map((photoId, index) => ({
+      url: `https://images.unsplash.com/${photoId}?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`,
+      prompt: `Professional ${business.industry || 'business'} content for ${business.name}`,
+      platform: platforms[index] || "Instagram",
+      type: "diverse_fallback",
+      business: business.name,
+      industry: business.industry || 'business'
+    }));
 
-    return professionalImages.slice(0, count);
+    return professionalImages;
   } catch (error) {
     console.error("Error generating images:", error);
     return [];
