@@ -2,6 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { getPlatformRequirements, validateApiKeys, testInstagramYouTube } from '../utils/socialMediaService';
 
 const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
+  // Add keyboard support for Escape key and click outside to close
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    
+    const handleClickOutside = (e) => {
+      if (isOpen && e.target.classList.contains('modal-backdrop')) {
+        onClose();
+      }
+    };
+    
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('click', handleClickOutside);
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [isOpen, onClose]);
+
   const [config, setConfig] = useState(() => {
     // Initialize with current config or default values
     const defaultConfig = {
@@ -430,7 +454,7 @@ Authorization code:`);
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 modal-backdrop">
       <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
@@ -460,7 +484,8 @@ Authorization code:`);
               </button>
               <button
                 onClick={onClose}
-                className="text-white hover:text-gray-200 transition-colors"
+                className="text-white hover:text-red-400 transition-colors text-2xl font-bold bg-red-500/20 hover:bg-red-500/40 rounded-full w-8 h-8 flex items-center justify-center"
+                title="Close (Esc)"
               >
                 ✕
               </button>
