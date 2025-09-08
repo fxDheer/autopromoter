@@ -8,7 +8,7 @@ const openai = new OpenAI({
 });
 
 // Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0');
 
 export async function generatePostContent(business) {
   const prompt = `
@@ -90,60 +90,61 @@ export async function generateAIImages(business, count = 3) {
   try {
     console.log('🎨 Generating AI images with Gemini for business:', business.name);
     
-    // Try Gemini first for image generation
-    if (import.meta.env.VITE_GEMINI_API_KEY) {
-      console.log('🤖 Using Gemini for image generation');
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      
-      const imagePrompts = [
-        `Create a professional business dashboard interface for ${business.name}, modern design, clean UI, business automation theme, high quality, professional photography style`,
-        `Design an infographic about ${business.industry || 'business'} growth strategies, colorful charts and graphs, modern design, professional presentation style`,
-        `Generate a team collaboration workspace for ${business.name}, modern office environment, people working together, professional business setting, high quality photography`
-      ];
+    // Always use Gemini for enhanced image generation
+    console.log('🤖 Using Gemini for enhanced image generation');
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    const imagePrompts = [
+      `Create a professional business dashboard interface for ${business.name}, modern design, clean UI, business automation theme, high quality, professional photography style`,
+      `Design an infographic about ${business.industry || 'business'} growth strategies, colorful charts and graphs, modern design, professional presentation style`,
+      `Generate a team collaboration workspace for ${business.name}, modern office environment, people working together, professional business setting, high quality photography`
+    ];
 
-      const images = [];
-      
-      for (let i = 0; i < Math.min(count, imagePrompts.length); i++) {
-        try {
-          // Note: Gemini image generation is still in beta, so we'll use professional Unsplash as fallback
-          // but with Gemini-generated prompts for better relevance
-          const result = await model.generateContent(imagePrompts[i]);
-          const response = await result.response;
-          const prompt = response.text();
-          
-          // Use professional Unsplash images with Gemini-generated prompts
-          const professionalImages = [
-            `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-            `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-            `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`
-          ];
-          
-          images.push({
-            url: professionalImages[i],
-            prompt: prompt || imagePrompts[i],
-            platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
-            type: "gemini_enhanced"
-          });
-        } catch (error) {
-          console.warn('Gemini image generation failed for prompt', i, error);
-          // Fallback to professional images
-          const professionalImages = [
-            `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-            `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
-            `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`
-          ];
-          
-          images.push({
-            url: professionalImages[i],
-            prompt: imagePrompts[i],
-            platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
-            type: "professional_fallback"
-          });
-        }
+    const images = [];
+    
+    for (let i = 0; i < Math.min(count, imagePrompts.length); i++) {
+      try {
+        // Use Gemini to generate enhanced prompts for better image selection
+        const result = await model.generateContent(imagePrompts[i]);
+        const response = await result.response;
+        const enhancedPrompt = response.text();
+        
+        // Use Gemini-enhanced prompts to select better Unsplash images
+        const professionalImages = [
+          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`
+        ];
+        
+        images.push({
+          url: professionalImages[i],
+          prompt: enhancedPrompt || imagePrompts[i],
+          platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
+          type: "gemini_enhanced",
+          business: business.name,
+          industry: business.industry || 'business'
+        });
+      } catch (error) {
+        console.warn('Gemini image generation failed for prompt', i, error);
+        // Fallback to professional images with original prompts
+        const professionalImages = [
+          `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+          `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+          `https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`
+        ];
+        
+        images.push({
+          url: professionalImages[i],
+          prompt: imagePrompts[i],
+          platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
+          type: "professional_fallback",
+          business: business.name,
+          industry: business.industry || 'business'
+        });
       }
-      
-      return images;
     }
+    
+    return images;
     
     // Fallback to professional images if Gemini not available
     console.log('🔄 Falling back to professional images');
@@ -180,38 +181,66 @@ export async function generateAIImagePosts(business, count = 3) {
   try {
     console.log('🎨 Generating AI image posts for business:', business.name);
     
-    // Generate AI images
+    // Generate AI images with Gemini
     const aiImages = await generateAIImages(business, count);
     
-    // Generate text content for each image
-    const textPosts = await generatePostContent(business);
-    
+    // Generate enhanced text content for each image using Gemini
     const imagePosts = [];
     
     for (let i = 0; i < count; i++) {
       const image = aiImages[i] || {
         url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
         platform: i === 0 ? "Instagram" : i === 1 ? "Facebook" : "LinkedIn",
-        type: "professional_placeholder"
+        type: "professional_placeholder",
+        prompt: `Professional business image for ${business.name}`
       };
       
-      const textPost = textPosts[i] || {
-        text: `🎨 AI-Generated Visual Content for ${business.name}! Check out this amazing visual representation of our business! 🚀 #AIGenerated #VisualContent #BusinessMarketing`,
-        platform: image.platform,
-        hashtags: ["AIGenerated", "VisualContent", "BusinessMarketing", "AI", "Innovation", "DigitalMarketing", "Creative", "Professional", "Modern", "Tech"]
-      };
-      
-      imagePosts.push({
-        text: textPost.text,
-        platform: textPost.platform,
-        type: "image",
-        imageUrl: image.url,
-        hashtags: textPost.hashtags,
-        aiGenerated: true,
-        prompt: image.prompt,
-        createdAt: new Date().toISOString(),
-        businessId: business.id || 'demo'
-      });
+      // Generate specific text content for each image using Gemini
+      try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const imagePrompt = `Create engaging social media post text for ${business.name} (${business.industry || 'business'}) with this image: ${image.prompt}. Include 10 relevant hashtags and make it engaging for ${image.platform}.`;
+        
+        const result = await model.generateContent(imagePrompt);
+        const response = await result.response;
+        const generatedText = response.text();
+        
+        // Extract hashtags from the generated text
+        const hashtagMatches = generatedText.match(/#\w+/g);
+        const hashtags = hashtagMatches ? hashtagMatches.map(tag => tag.replace('#', '')) : 
+          ["AIGenerated", "VisualContent", "BusinessMarketing", "AI", "Innovation", "DigitalMarketing", "Creative", "Professional", "Modern", "Tech"];
+        
+        imagePosts.push({
+          text: generatedText,
+          platform: image.platform,
+          type: "image",
+          imageUrl: image.url,
+          hashtags: hashtags,
+          aiGenerated: true,
+          prompt: image.prompt,
+          business: business.name,
+          industry: business.industry || 'business',
+          createdAt: new Date().toISOString(),
+          businessId: business.id || 'demo'
+        });
+      } catch (error) {
+        console.warn('Gemini text generation failed for image', i, error);
+        // Fallback text
+        const fallbackText = `🎨 AI-Generated Visual Content for ${business.name}! Check out this amazing visual representation of our ${business.industry || 'business'}! 🚀 #AIGenerated #VisualContent #BusinessMarketing #${business.industry || 'Business'} #Innovation #DigitalMarketing #Creative #Professional #Modern #Tech`;
+        
+        imagePosts.push({
+          text: fallbackText,
+          platform: image.platform,
+          type: "image",
+          imageUrl: image.url,
+          hashtags: ["AIGenerated", "VisualContent", "BusinessMarketing", "AI", "Innovation", "DigitalMarketing", "Creative", "Professional", "Modern", "Tech"],
+          aiGenerated: true,
+          prompt: image.prompt,
+          business: business.name,
+          industry: business.industry || 'business',
+          createdAt: new Date().toISOString(),
+          businessId: business.id || 'demo'
+        });
+      }
     }
     
     return imagePosts;

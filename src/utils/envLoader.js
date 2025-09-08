@@ -8,7 +8,7 @@ export const loadEnvironmentVariables = () => {
       apiKey: import.meta.env.VITE_OPENAI_API_KEY || ''
     },
     gemini: {
-      apiKey: import.meta.env.VITE_GEMINI_API_KEY || ''
+      apiKey: import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0'
     },
     facebook: {
       appId: import.meta.env.VITE_FACEBOOK_APP_ID || '',
