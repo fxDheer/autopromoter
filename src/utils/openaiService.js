@@ -114,37 +114,33 @@ Generate completely unique content for each post. Avoid repetition. Follow all f
     // Fall through to fallback content generation
   }
     
-    // Fallback to OpenAI if Gemini is not available
-    if (openai) {
-      console.log('🔄 Falling back to OpenAI for content generation');
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.8,
-      });
+  // Fallback to OpenAI if Gemini is not available
+  if (openai) {
+    console.log('🔄 Falling back to OpenAI for content generation');
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.8,
+    });
 
-      const content = completion.choices[0]?.message?.content;
+    const content = completion.choices[0]?.message?.content;
 
-      // Attempt to parse JSON from the response
-      const jsonStart = content.indexOf("["); // in case there's explanation before JSON
-      const jsonEnd = content.lastIndexOf("]") + 1;
+    // Attempt to parse JSON from the response
+    const jsonStart = content.indexOf("["); // in case there's explanation before JSON
+    const jsonEnd = content.lastIndexOf("]") + 1;
 
-      const json = content.substring(jsonStart, jsonEnd);
-      return JSON.parse(json);
-    } else {
-      console.log('🔄 Using fallback content generation');
-      // Return default content if both AI services fail
-      return [
-        {
-          text: `🚀 ${business.name} is revolutionizing the ${business.industry || 'business'} industry! Our innovative solutions help ${business.audience || 'professionals'} achieve amazing results. Ready to transform your business? 💡 #BusinessGrowth #Innovation #Success #${business.industry || 'Business'} #Professional #Results #Transformation #Excellence #Leadership #Future`,
-          platform: "Instagram",
-          hashtags: ["BusinessGrowth", "Innovation", "Success", business.industry || "Business", "Professional", "Results", "Transformation", "Excellence", "Leadership", "Future"]
-        }
-      ];
-    }
-  } catch (error) {
-    console.error("Error generating content:", error);
-    return [];
+    const json = content.substring(jsonStart, jsonEnd);
+    return JSON.parse(json);
+  } else {
+    console.log('🔄 Using fallback content generation');
+    // Return default content if both AI services fail
+    return [
+      {
+        text: `🚀 ${business.name} is revolutionizing the ${business.industry || 'business'} industry! Our innovative solutions help ${business.audience || 'professionals'} achieve amazing results. Ready to transform your business? 💡 #BusinessGrowth #Innovation #Success #${business.industry || 'Business'} #Professional #Results #Transformation #Excellence #Leadership #Future`,
+        platform: "Instagram",
+        hashtags: ["BusinessGrowth", "Innovation", "Success", business.industry || "Business", "Professional", "Results", "Transformation", "Excellence", "Leadership", "Future"]
+      }
+    ];
   }
 }
 
