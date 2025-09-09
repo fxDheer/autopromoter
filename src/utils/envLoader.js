@@ -5,7 +5,9 @@
 export const loadEnvironmentVariables = () => {
   const config = {
     openai: {
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY || ''
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
+      // Fallback API key for development (replace with your actual key)
+      fallbackKey: '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'
     },
     gemini: {
       apiKey: import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0'

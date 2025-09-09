@@ -2,134 +2,157 @@ import OpenAI from "openai";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SOCIAL_MEDIA_RULES, applySocialMediaRules, validateContent } from './socialMediaRules';
 
-// Initialize both OpenAI and Gemini with fallback
+/**
+ * OpenAI Service for AutoPromoter
+ * Handles both text generation (GPT-4.1-mini) and image generation (DALL-E 3)
+ * Cost-efficient and high-quality content generation for social media posts
+ */
+
+// Initialize OpenAI with your API key
 let openai;
 try {
+  // Get API key from localStorage first, then environment variable
+  const storedKey = typeof window !== 'undefined' ? localStorage.getItem('openai_api_key') : null;
+  const apiKey = storedKey || import.meta.env.VITE_OPENAI_API_KEY;
+  
   openai = new OpenAI({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY || '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',
+    apiKey: apiKey,
     dangerouslyAllowBrowser: true, // Only for client-side testing, use secure backend in production
   });
+  console.log('✅ OpenAI initialized successfully with API key');
 } catch (error) {
-  console.warn('OpenAI initialization failed:', error);
+  console.warn('❌ OpenAI initialization failed:', error);
   openai = null;
 }
 
-// Initialize Gemini AI
+// Initialize Gemini AI as fallback
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0');
 
-export async function generatePostContent(business) {
-  // Add timestamp and random elements to ensure uniqueness
-  const timestamp = Date.now();
-  const randomSeed = Math.random().toString(36).substring(7);
-  
-  console.log('🔄 Generating fresh content with dynamic templates (Gemini quota exceeded)');
-  
-  // Create diverse, dynamic content templates that change each time
-  const businessName = business.name || "Auto Digital Promoter";
-  const industry = business.industry || 'business';
-  const audience = business.audience || 'professionals';
-  const keywords = business.keywords || 'Digital Marketing, Social Media';
-  
-  // Dynamic content variations that change based on timestamp and random elements
-  const contentTemplates = [
-    {
-      hooks: ["🚀", "⚡", "💡", "🎯", "🔥", "🌟", "💪", "🎉", "📈", "🚀"],
-      problems: [
-        "Tired of spending hours on manual tasks?",
-        "Struggling with inefficient processes?",
-        "Wasting time on repetitive work?",
-        "Feeling overwhelmed by daily operations?",
-        "Looking for ways to boost productivity?",
-        "Tired of outdated business methods?",
-        "Struggling to keep up with competition?",
-        "Need better workflow solutions?"
-      ],
-      solutions: [
-        "Our AI-powered automation saves you 10+ hours weekly!",
-        "Transform your workflow with smart automation!",
-        "Boost efficiency with cutting-edge technology!",
-        "Streamline operations with intelligent systems!",
-        "Accelerate growth with automated processes!",
-        "Maximize productivity with smart solutions!",
-        "Revolutionize your business with AI!",
-        "Supercharge your operations with automation!"
-      ],
-      ctas: [
-        "Ready to transform your workflow?",
-        "Start working smarter today!",
-        "Join the automation revolution!",
-        "Take your business to the next level!",
-        "Unlock your full potential!",
-        "Experience the future of business!",
-        "Don't wait - start now!",
-        "Transform your business today!"
-      ]
-    }
-  ];
-  
-  // Generate 3 unique posts
-  const posts = [];
-  const platforms = ["Instagram", "Facebook", "LinkedIn"];
-  
-  for (let i = 0; i < 3; i++) {
-    const template = contentTemplates[0];
-    const hook = template.hooks[Math.floor(Math.random() * template.hooks.length)];
-    const problem = template.problems[Math.floor(Math.random() * template.problems.length)];
-    const solution = template.solutions[Math.floor(Math.random() * template.solutions.length)];
-    const cta = template.ctas[Math.floor(Math.random() * template.ctas.length)];
-    
-    // Create unique hashtag sets for each post
-    const hashtagSets = [
-      ["BusinessAutomation", "ProductivityHacks", "TimeManagement", "AI", "WorkflowOptimization", "BusinessGrowth", "Efficiency", "DigitalTransformation", "SmartBusiness", "Innovation"],
-      ["TechSolutions", "ProcessImprovement", "BusinessEfficiency", "Automation", "Productivity", "Workflow", "Innovation", "Technology", "BusinessGrowth", "Success"],
-      ["DigitalTransformation", "BusinessInnovation", "Efficiency", "Productivity", "Automation", "Technology", "Growth", "Success", "Innovation", "Future"]
-    ];
-    
-    const hashtags = hashtagSets[i] || hashtagSets[0];
-    
-    // Create unique text for each post
-    const text = `${hook} ${problem} ${solution} ${cta} #${hashtags.join(' #')}`;
-    
-    posts.push({
-      text: text,
-      platform: platforms[i],
-      hashtags: hashtags
+/**
+ * Reinitialize OpenAI with a new API key
+ * @param {string} newApiKey - New OpenAI API key
+ */
+export function reinitializeOpenAI(newApiKey) {
+  try {
+    openai = new OpenAI({
+      apiKey: newApiKey,
+      dangerouslyAllowBrowser: true,
     });
+    console.log('✅ OpenAI reinitialized with new API key');
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to reinitialize OpenAI:', error);
+    return false;
   }
-  
-  console.log('✅ Generated dynamic content:', posts);
-  return posts;
 }
 
-// AI Image Generation with DALL-E 3
-export async function generateAIImages(business, count = 3) {
+/**
+ * Generate text content using GPT-4.1-mini (cost-efficient)
+ * @param {Object} business - Business information
+ * @param {string} contentType - Type of content (caption, hashtags, adCopy)
+ * @param {string} platform - Social media platform
+ * @returns {Object} Generated text content
+ */
+export async function generateTextContent(business, contentType = 'caption', platform = 'Instagram') {
   try {
-    console.log('🎨 Generating AI images with DALL-E 3 for business:', business.name);
+    console.log(`📝 Generating ${contentType} for ${platform} using GPT-4.1-mini`);
     
     if (!openai) {
       throw new Error('OpenAI not initialized');
     }
+
+    // Create platform-specific prompts for cost efficiency
+    const prompts = {
+      caption: `Write a catchy ${platform} caption for ${business.name} (${business.industry || 'business'} industry). 
+                Target audience: ${business.audience || 'professionals'}. 
+                Keywords: ${business.keywords || 'business, growth'}. 
+                Make it engaging, professional, and include a call-to-action. 
+                Keep it under 200 characters for optimal engagement.`,
+      
+      hashtags: `Generate 10 trending hashtags for ${business.name} in the ${business.industry || 'business'} industry. 
+                 Mix popular and niche hashtags. 
+                 Include: ${business.keywords || 'business, growth'}. 
+                 Format as a simple list.`,
+      
+      adCopy: `Write compelling ad copy for ${business.name} promoting their ${business.industry || 'business'} services. 
+               Target: ${business.audience || 'professionals'}. 
+               Focus on benefits, urgency, and clear value proposition. 
+               Keep it concise and action-oriented.`
+    };
+
+    const prompt = prompts[contentType] || prompts.caption;
     
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini", // Cost-efficient model
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional social media marketing expert. Create engaging, high-quality content that drives engagement and conversions."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_tokens: 300, // Limit tokens for cost efficiency
+      temperature: 0.7, // Balance creativity and consistency
+    });
+
+    const generatedText = response.choices[0].message.content.trim();
+    console.log(`✅ Generated ${contentType}:`, generatedText);
+    
+    return {
+      text: generatedText,
+      contentType: contentType,
+      platform: platform,
+      model: "gpt-4o-mini",
+      cost: "low", // Cost-efficient model
+      timestamp: new Date().toISOString()
+    };
+
+  } catch (error) {
+    console.error(`❌ Error generating ${contentType}:`, error);
+    
+    // Fallback to dynamic templates
+    return generateFallbackText(business, contentType, platform);
+  }
+}
+
+/**
+ * Generate images using DALL-E 3
+ * @param {Object} business - Business information
+ * @param {number} count - Number of images to generate
+ * @param {string} size - Image size (1024x1024 or 512x512)
+ * @returns {Array} Generated images
+ */
+export async function generateImages(business, count = 3, size = "1024x1024") {
+  try {
+    console.log(`🎨 Generating ${count} images using DALL-E 3 (${size})`);
+    
+    if (!openai) {
+      throw new Error('OpenAI not initialized');
+    }
+
     const images = [];
     
     // Create unique, creative prompts for each image
     const creativePrompts = [
-      `Create a modern, professional business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting.`,
-      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout.`,
-      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality.`
+      `Create a modern, professional business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy.`,
+      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized.`,
+      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style.`
     ];
     
     for (let i = 0; i < count; i++) {
       try {
         const prompt = creativePrompts[i] || creativePrompts[0];
-        console.log(`🎨 Generating image ${i + 1} with DALL-E 3: ${prompt}`);
+        console.log(`🎨 Generating image ${i + 1} with DALL-E 3: ${prompt.substring(0, 100)}...`);
         
         const response = await openai.images.generate({
           model: "dall-e-3",
           prompt: prompt,
           n: 1,
-          size: "1024x1024",
-          quality: "hd",
+          size: size, // Configurable size for cost control
+          quality: size === "1024x1024" ? "hd" : "standard", // HD for larger images
           style: "natural"
         });
         
@@ -144,13 +167,15 @@ export async function generateAIImages(business, count = 3) {
           business: business.name,
           industry: business.industry || 'business',
           aiGenerated: true,
+          size: size,
+          model: "dall-e-3",
           createdAt: new Date().toISOString()
         });
         
       } catch (error) {
         console.error(`❌ Error generating image ${i + 1} with DALL-E 3:`, error);
         
-        // Fallback to creative Unsplash images with unique variations
+        // Fallback to creative Unsplash images
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substr(2, 9);
         const fallbackImages = [
@@ -160,120 +185,203 @@ export async function generateAIImages(business, count = 3) {
         ];
         
         images.push({
-          url: `https://images.unsplash.com/${fallbackImages[i] || fallbackImages[0]}?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}_${randomId}`,
+          url: `https://images.unsplash.com/${fallbackImages[i] || fallbackImages[0]}?w=${size.split('x')[0]}&h=${size.split('x')[1]}&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}_${randomId}`,
           prompt: `Professional business image for ${business.name}`,
           platform: ["Instagram", "Facebook", "LinkedIn"][i] || "Instagram",
           type: "fallback",
           business: business.name,
           industry: business.industry || 'business',
           aiGenerated: false,
+          size: size,
+          model: "unsplash",
           createdAt: new Date().toISOString()
         });
       }
     }
     
-    console.log('✅ Generated AI images:', images);
+    console.log('✅ Generated images:', images);
     return images;
     
   } catch (error) {
-    console.error("❌ Error generating AI images:", error);
+    console.error("❌ Error generating images:", error);
     return [];
   }
 }
 
-// Generate AI-powered image posts with dynamic content
-export async function generateAIImagePosts(business, count = 3) {
+/**
+ * Main function to generate complete social media posts
+ * Combines text and image generation for professional results
+ * @param {Object} business - Business information
+ * @param {Object} options - Generation options
+ * @returns {Object} Complete post with caption, hashtags, and image
+ */
+export async function generatePost(business, options = {}) {
   try {
-    console.log('🎨 Generating dynamic image posts for business:', business.name);
+    console.log('🚀 Generating complete social media post for:', business.name);
     
-    // Generate diverse images with DALL-E 3
-    const aiImages = await generateAIImages(business, count);
-    
-    // Create unique, dynamic text content for each image post
-    const imagePosts = [];
-    const platforms = ["Instagram", "Facebook", "LinkedIn"];
-    
-    // Dynamic content variations that change each time
-    const contentVariations = [
-      {
-        hooks: ["🎨", "📊", "📈", "💡", "🚀", "⚡", "🎯", "🔥", "🌟", "💪"],
-        descriptions: [
-          "Check out this amazing AI-generated visual representation of our business growth!",
-          "See how our data-driven approach is transforming the industry with AI!",
-          "Discover the power of visual analytics and AI in business!",
-          "Explore our innovative AI-powered dashboard and insights!",
-          "Get a glimpse into our strategic AI planning process!",
-          "Witness the impact of our AI technology solutions!",
-          "See how we're revolutionizing business processes with AI!",
-          "Discover the future of AI-powered business automation!"
-        ],
-        ctas: [
-          "Ready to see more AI innovations?",
-          "Want to learn more about our AI solutions?",
-          "Interested in our AI-powered automation?",
-          "Ready to transform your business with AI?",
-          "Want to get started with AI?",
-          "Ready to join the AI revolution?",
-          "Want to see AI results?",
-          "Ready to innovate with AI?"
-        ]
-      }
-    ];
-    
-    for (let i = 0; i < count; i++) {
-      const image = aiImages[i] || {
-        url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}_${i}`,
-        platform: platforms[i] || "Instagram",
-        type: "professional_placeholder",
-        prompt: `Professional business image for ${business.name}`,
-        aiGenerated: false
-      };
-      
-      // Generate dynamic text content with unique variations
-      const template = contentVariations[0];
-      const hook = template.hooks[Math.floor(Math.random() * template.hooks.length)];
-      const description = template.descriptions[Math.floor(Math.random() * template.descriptions.length)];
-      const cta = template.ctas[Math.floor(Math.random() * template.ctas.length)];
-      
-      // Create unique hashtag sets for each image post
-      const hashtagSets = [
-        ["AIGenerated", "BusinessGrowth", "DataAnalytics", "Innovation", "Technology", "DigitalTransformation", "BusinessIntelligence", "Automation", "Efficiency", "Success"],
-        ["VisualContent", "Dashboard", "Analytics", "Business", "Growth", "Data", "Insights", "Strategy", "Performance", "Results"],
-        ["AI", "VisualContent", "BusinessMarketing", "Innovation", "DigitalMarketing", "Creative", "Professional", "Modern", "Tech", "Future"]
-      ];
-      
-      const hashtags = hashtagSets[i] || hashtagSets[0];
-      
-      // Create unique text for each image post
-      const text = `${hook} ${description} ${cta} #${hashtags.join(' #')}`;
-      
-      imagePosts.push({
-        text: text,
-        platform: image.platform,
-        type: "image",
-        imageUrl: image.url,
-        hashtags: hashtags,
-        aiGenerated: image.aiGenerated || false,
-        prompt: image.prompt,
-        business: business.name,
-        industry: business.industry || 'business',
-        createdAt: new Date().toISOString(),
-        businessId: business.id || 'demo',
-        // Ensure proper structure for backend
-        content: {
-          text: text,
-          type: "image",
-          imageUrl: image.url,
-          platform: image.platform
-        }
-      });
+    const {
+      platform = 'Instagram',
+      includeImage = true,
+      imageSize = '1024x1024', // Default to high quality, can be changed to 512x512 for testing
+      contentType = 'full' // 'caption', 'hashtags', 'adCopy', or 'full'
+    } = options;
+
+    const result = {
+      business: business.name,
+      platform: platform,
+      timestamp: new Date().toISOString(),
+      generated: {}
+    };
+
+    // Generate text content based on type
+    if (contentType === 'full' || contentType === 'caption') {
+      result.generated.caption = await generateTextContent(business, 'caption', platform);
     }
     
-    console.log('✅ Generated dynamic image posts:', imagePosts);
-    return imagePosts;
+    if (contentType === 'full' || contentType === 'hashtags') {
+      result.generated.hashtags = await generateTextContent(business, 'hashtags', platform);
+    }
+    
+    if (contentType === 'full' || contentType === 'adCopy') {
+      result.generated.adCopy = await generateTextContent(business, 'adCopy', platform);
+    }
+
+    // Generate image if requested
+    if (includeImage) {
+      result.generated.image = await generateImages(business, 1, imageSize);
+    }
+
+    // Combine all content into final post
+    const finalPost = {
+      text: result.generated.caption?.text || '',
+      hashtags: result.generated.hashtags?.text || '',
+      adCopy: result.generated.adCopy?.text || '',
+      imageUrl: result.generated.image?.[0]?.url || null,
+      platform: platform,
+      type: includeImage ? 'image' : 'text',
+      aiGenerated: true,
+      business: business.name,
+      industry: business.industry || 'business',
+      createdAt: new Date().toISOString(),
+      // Full post text combining caption and hashtags
+      fullText: `${result.generated.caption?.text || ''} ${result.generated.hashtags?.text || ''}`.trim()
+    };
+
+    console.log('✅ Generated complete post:', finalPost);
+    return finalPost;
+
+  } catch (error) {
+    console.error('❌ Error generating complete post:', error);
+    
+    // Fallback to basic template
+    return generateFallbackPost(business, options);
+  }
+}
+
+/**
+ * Generate multiple posts for different platforms
+ * @param {Object} business - Business information
+ * @param {Array} platforms - Array of platforms to generate for
+ * @param {Object} options - Generation options
+ * @returns {Array} Array of generated posts
+ */
+export async function generateMultiplePosts(business, platforms = ['Instagram', 'Facebook', 'LinkedIn'], options = {}) {
+  try {
+    console.log(`📱 Generating posts for ${platforms.length} platforms`);
+    
+    const posts = [];
+    
+    for (const platform of platforms) {
+      try {
+        const post = await generatePost(business, { ...options, platform });
+        posts.push(post);
+      } catch (error) {
+        console.error(`❌ Error generating post for ${platform}:`, error);
+        // Add fallback post for this platform
+        posts.push(generateFallbackPost(business, { ...options, platform }));
+      }
+    }
+    
+    console.log(`✅ Generated ${posts.length} posts for ${platforms.length} platforms`);
+    return posts;
     
   } catch (error) {
-    console.error("Error generating AI image posts:", error);
+    console.error('❌ Error generating multiple posts:', error);
     return [];
   }
-} 
+}
+
+/**
+ * Fallback text generation when OpenAI fails
+ * @param {Object} business - Business information
+ * @param {string} contentType - Type of content
+ * @param {string} platform - Social media platform
+ * @returns {Object} Fallback text content
+ */
+function generateFallbackText(business, contentType, platform) {
+  console.log(`🔄 Using fallback text generation for ${contentType}`);
+  
+  const businessName = business.name || "Auto Digital Promoter";
+  const industry = business.industry || 'business';
+  const audience = business.audience || 'professionals';
+  
+  const fallbackTemplates = {
+    caption: `🚀 Transform your ${industry} with ${businessName}! Discover how our innovative solutions help ${audience} achieve success. Ready to take your business to the next level? 💪 #${industry} #BusinessGrowth #Innovation`,
+    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future`,
+    adCopy: `Don't miss out! ${businessName} is revolutionizing the ${industry} industry. Join thousands of ${audience} who are already seeing results. Limited time offer - act now!`
+  };
+  
+  return {
+    text: fallbackTemplates[contentType] || fallbackTemplates.caption,
+    contentType: contentType,
+    platform: platform,
+    model: "fallback",
+    cost: "free",
+    timestamp: new Date().toISOString()
+  };
+}
+
+/**
+ * Fallback post generation when everything fails
+ * @param {Object} business - Business information
+ * @param {Object} options - Generation options
+ * @returns {Object} Fallback post
+ */
+function generateFallbackPost(business, options = {}) {
+  console.log('🔄 Using fallback post generation');
+  
+  const businessName = business.name || "Auto Digital Promoter";
+  const industry = business.industry || 'business';
+  const platform = options.platform || 'Instagram';
+  
+  return {
+    text: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪`,
+    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology`,
+    adCopy: `Don't miss out! ${businessName} is revolutionizing the ${industry} industry. Join thousands of professionals seeing results.`,
+    imageUrl: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+    platform: platform,
+    type: options.includeImage ? 'image' : 'text',
+    aiGenerated: false,
+    business: businessName,
+    industry: industry,
+    createdAt: new Date().toISOString(),
+    fullText: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪 #${industry} #BusinessGrowth #Innovation #Success #Professional #Technology`
+  };
+}
+
+// Legacy functions for backward compatibility
+export async function generatePostContent(business) {
+  console.log('🔄 Using legacy generatePostContent, redirecting to generatePost');
+  const post = await generatePost(business, { contentType: 'caption', includeImage: false });
+  return [post];
+}
+
+export async function generateAIImages(business, count = 3) {
+  console.log('🔄 Using legacy generateAIImages, redirecting to generateImages');
+  return await generateImages(business, count);
+}
+
+export async function generateAIImagePosts(business, count = 3) {
+  console.log('🔄 Using legacy generateAIImagePosts, redirecting to generateMultiplePosts');
+  return await generateMultiplePosts(business, ['Instagram', 'Facebook', 'LinkedIn'], { includeImage: true });
+}

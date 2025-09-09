@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ApiConfigModal from "../components/ApiConfigModal";
 import AILearningDashboard from "../components/AILearningDashboard";
 import ClientSelector from "../components/ClientSelector";
+import OpenAIConfig from "../components/OpenAIConfig";
 import { autoPostToSocialMediaWithPlatformPosts, validateApiKeys } from "../utils/socialMediaService";
 import autoLearningService from "../utils/autoLearningService";
 import { loadEnvironmentVariables, convertToApiConfig } from "../utils/envLoader";
-import { generateAIImagePosts, generatePostContent } from "../utils/openaiService";
+import { generatePost, generateMultiplePosts, generateTextContent, generateImages, reinitializeOpenAI } from "../utils/openaiService";
 
 const GeneratePosts = () => {
   const navigate = useNavigate();
@@ -21,7 +22,9 @@ const GeneratePosts = () => {
   const [postingStatus, setPostingStatus] = useState({});
   const [showApiConfig, setShowApiConfig] = useState(false);
   const [showAIDashboard, setShowAIDashboard] = useState(false);
+  const [showOpenAIConfig, setShowOpenAIConfig] = useState(false);
   const [apiConfig, setApiConfig] = useState({});
+  const [openAIKey, setOpenAIKey] = useState('');
   const [autoPostResults, setAutoPostResults] = useState([]);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
   const [currentClient, setCurrentClient] = useState('auto-promoter');
@@ -111,6 +114,33 @@ const GeneratePosts = () => {
       window.location.reload();
     }, 1000);
   };
+
+  // Handle OpenAI API key save
+  const handleOpenAISave = (key) => {
+    setOpenAIKey(key);
+    localStorage.setItem('openai_api_key', key);
+    
+    // Reinitialize OpenAI with the new key
+    const success = reinitializeOpenAI(key);
+    if (success) {
+      console.log('✅ OpenAI API key saved and service reinitialized:', key);
+      alert('✅ OpenAI API key saved successfully! You can now generate AI-powered content.');
+    } else {
+      console.error('❌ Failed to reinitialize OpenAI service');
+      alert('❌ Failed to initialize OpenAI service. Please check your API key.');
+    }
+  };
+
+  // Load OpenAI API key on component mount
+  useEffect(() => {
+    const savedKey = localStorage.getItem('openai_api_key');
+    if (savedKey) {
+      setOpenAIKey(savedKey);
+      console.log('✅ OpenAI API key loaded from localStorage');
+    } else {
+      console.log('⚠️ No OpenAI API key found. Please configure it for AI content generation.');
+    }
+  }, []);
 
   // Auto-load environment variables on component mount
   useEffect(() => {
@@ -202,41 +232,82 @@ const GeneratePosts = () => {
   const handleGenerateMore = async () => {
     setGenerating(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`🚀 Generating fresh ${contentType} posts using OpenAI...`);
       
       let newPosts = [];
       
       if (contentType === 'text') {
-        newPosts = await generateFreshPosts(business);
-      } else if (contentType === 'video') {
-        newPosts = [
-          {
-            text: "🎬 NEW VIDEO: How to 10x Your Business Growth in 30 Days! Watch this step-by-step guide and transform your business today! 🚀 #BusinessGrowth #VideoMarketing #Success",
-            platform: "Instagram Reels",
-            type: "video",
-            videoUrl: "https://example.com/video1.mp4",
-            thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
-          },
-          {
-            text: "📱 TikTok: The secret to viral business content! Learn how we helped 100+ businesses go viral with our proven strategies! 💡 #TikTokMarketing #ViralContent #BusinessTips",
-            platform: "TikTok",
-            type: "video",
-            videoUrl: "https://example.com/video2.mp4",
-            thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
-          },
-          {
-            text: "🎥 YouTube Shorts: 5 Game-Changing Business Automation Tips You Need to Know! Save this for later! ⚡ #YouTubeShorts #Automation #BusinessTips",
-            platform: "YouTube Shorts",
-            type: "video",
-            videoUrl: "https://example.com/video3.mp4",
-            thumbnail: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
-          }
-        ];
-      } else if (contentType === 'image') {
-        // Use AI to generate image posts with fresh content
+        // Generate text posts using GPT-4.1-mini
         try {
-          console.log('🎨 Generating fresh AI image posts...');
-          newPosts = await generateAIImagePosts(business, 3);
+          console.log('📝 Generating text posts with GPT-4.1-mini...');
+          newPosts = await generateMultiplePosts(business, ['Instagram', 'Facebook', 'LinkedIn'], {
+            includeImage: false,
+            contentType: 'full'
+          });
+          console.log('✅ Text posts generated:', newPosts);
+        } catch (error) {
+          console.error('❌ Text generation failed, using fallback:', error);
+          newPosts = await generateFreshPosts(business);
+        }
+      } else if (contentType === 'video') {
+        // Generate video content with AI-generated descriptions
+        try {
+          console.log('🎬 Generating video content with AI...');
+          const videoPosts = [];
+          const platforms = ["Instagram Reels", "TikTok", "YouTube Shorts"];
+          
+          for (let i = 0; i < 3; i++) {
+            const platform = platforms[i];
+            const textContent = await generateTextContent(business, 'caption', platform);
+            
+            videoPosts.push({
+              text: textContent.text,
+              platform: platform,
+              type: "video",
+              videoUrl: `https://example.com/video${i + 1}.mp4`,
+              thumbnail: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=400&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}_${i}`,
+              aiGenerated: true
+            });
+          }
+          
+          newPosts = videoPosts;
+          console.log('✅ Video posts generated:', newPosts);
+        } catch (error) {
+          console.error('❌ Video generation failed, using fallback:', error);
+          // Fallback video posts
+          newPosts = [
+            {
+              text: "🎬 NEW VIDEO: How to 10x Your Business Growth in 30 Days! Watch this step-by-step guide and transform your business today! 🚀 #BusinessGrowth #VideoMarketing #Success",
+              platform: "Instagram Reels",
+              type: "video",
+              videoUrl: "https://example.com/video1.mp4",
+              thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
+            },
+            {
+              text: "📱 TikTok: The secret to viral business content! Learn how we helped 100+ businesses go viral with our proven strategies! 💡 #TikTokMarketing #ViralContent #BusinessTips",
+              platform: "TikTok",
+              type: "video",
+              videoUrl: "https://example.com/video2.mp4",
+              thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
+            },
+            {
+              text: "🎥 YouTube Shorts: 5 Game-Changing Business Automation Tips You Need to Know! Save this for later! ⚡ #YouTubeShorts #Automation #BusinessTips",
+              platform: "YouTube Shorts",
+              type: "video",
+              videoUrl: "https://example.com/video3.mp4",
+              thumbnail: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300&h=400&fit=crop&crop=center&auto=format&q=80"
+            }
+          ];
+        }
+      } else if (contentType === 'image') {
+        // Generate image posts using DALL-E 3
+        try {
+          console.log('🎨 Generating AI image posts with DALL-E 3...');
+          newPosts = await generateMultiplePosts(business, ['Instagram', 'Facebook', 'LinkedIn'], {
+            includeImage: true,
+            imageSize: '1024x1024', // High quality images
+            contentType: 'full'
+          });
           console.log('✅ AI image posts generated:', newPosts);
         } catch (error) {
           console.error('❌ AI image generation failed, using fallback:', error);
@@ -274,7 +345,7 @@ const GeneratePosts = () => {
       setPosts(newPosts);
       // Only show alert for text posts to avoid confusion with image posts
       if (contentType === 'text') {
-        alert(`🔄 New ${contentType} posts generated successfully!`);
+        alert(`🔄 New ${contentType} posts generated successfully with OpenAI!`);
       }
     } catch (error) {
       console.error("Error generating more posts:", error);
@@ -879,6 +950,27 @@ const GeneratePosts = () => {
                       })}
                     </div>
                     
+                    {/* OpenAI Status */}
+                    <div className="mt-4 p-3 bg-purple-500/10 rounded-lg border border-purple-400/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">🤖</span>
+                          <div>
+                            <div className="text-white font-semibold">OpenAI AI Generation</div>
+                            <div className={`text-sm ${openAIKey ? 'text-green-300' : 'text-yellow-300'}`}>
+                              {openAIKey ? '✅ Configured - AI content ready!' : '⚠️ Not configured - Click "Configure OpenAI" to enable AI generation'}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setShowOpenAIConfig(true)}
+                          className="px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
+                        >
+                          {openAIKey ? 'Update' : 'Configure'}
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Summary Status */}
                     <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
                       <div className="text-center">
@@ -1144,6 +1236,12 @@ const GeneratePosts = () => {
                     ⚙️ Configure APIs
                   </button>
                   <button 
+                    onClick={() => setShowOpenAIConfig(true)}
+                    className="px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-2xl"
+                  >
+                    🤖 Configure OpenAI
+                  </button>
+                  <button 
                     onClick={() => setShowAIDashboard(true)}
                     className="px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-2xl"
                   >
@@ -1206,6 +1304,14 @@ const GeneratePosts = () => {
       <AILearningDashboard
         isOpen={showAIDashboard}
         onClose={() => setShowAIDashboard(false)}
+      />
+
+      {/* OpenAI Configuration Modal */}
+      <OpenAIConfig
+        isOpen={showOpenAIConfig}
+        onClose={() => setShowOpenAIConfig(false)}
+        onSave={handleOpenAISave}
+        currentKey={openAIKey}
       />
     </div>
   );
