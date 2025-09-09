@@ -289,17 +289,38 @@ export async function generatePost(business, options = {}) {
 export async function generateMultiplePosts(business, platforms = ['Instagram', 'Facebook', 'LinkedIn'], options = {}) {
   try {
     console.log(`📱 Generating posts for ${platforms.length} platforms`);
+    console.log('🔑 OpenAI available:', !!openai);
+    console.log('📋 Options:', options);
+    
+    // Check if OpenAI is available
+    if (!openai) {
+      console.error('❌ OpenAI not available, using fallback posts');
+      const fallbackPosts = platforms.map(platform => 
+        generateFallbackPost(business, { ...options, platform })
+      );
+      return fallbackPosts;
+    }
     
     const posts = [];
     
     for (const platform of platforms) {
       try {
+        console.log(`📝 Generating post for ${platform}...`);
         const post = await generatePost(business, { ...options, platform });
+        console.log(`✅ Generated post for ${platform}:`, post);
+        
+        // Verify the post has required content
+        if (!post.text || post.text.length < 10) {
+          throw new Error('Post text too short or empty');
+        }
+        
         posts.push(post);
       } catch (error) {
         console.error(`❌ Error generating post for ${platform}:`, error);
         // Add fallback post for this platform
-        posts.push(generateFallbackPost(business, { ...options, platform }));
+        const fallbackPost = generateFallbackPost(business, { ...options, platform });
+        console.log(`🔄 Using fallback for ${platform}:`, fallbackPost);
+        posts.push(fallbackPost);
       }
     }
     
@@ -308,7 +329,10 @@ export async function generateMultiplePosts(business, platforms = ['Instagram', 
     
   } catch (error) {
     console.error('❌ Error generating multiple posts:', error);
-    return [];
+    // Return fallback posts for all platforms
+    return platforms.map(platform => 
+      generateFallbackPost(business, { ...options, platform })
+    );
   }
 }
 
@@ -357,16 +381,16 @@ function generateFallbackPost(business, options = {}) {
   
   return {
     text: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪`,
-    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement`,
+    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement #DigitalMarketing #SocialMedia #Automation #BusinessTools #Strategy #Performance #Excellence #Motivation #Inspiration #Achievement #Success #Growth #Excellence #Motivation #Inspiration #Achievement`,
     adCopy: `Don't miss out! ${businessName} is revolutionizing the ${industry} industry. Join thousands of professionals seeing results.`,
-    imageUrl: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=512&h=512&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+    imageUrl: options.includeImage ? `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=512&h=512&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}` : null,
     platform: platform,
     type: options.includeImage ? 'image' : 'text',
     aiGenerated: false,
     business: businessName,
     industry: industry,
     createdAt: new Date().toISOString(),
-    fullText: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪 #${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement`
+    fullText: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪 #${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement #DigitalMarketing #SocialMedia #Automation #BusinessTools #Strategy #Performance #Excellence #Motivation #Inspiration #Achievement #Success #Growth #Excellence #Motivation #Inspiration #Achievement`
   };
 }
 
