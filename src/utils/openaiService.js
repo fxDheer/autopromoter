@@ -251,14 +251,18 @@ export async function generatePost(business, options = {}) {
     // Generate image if requested
     if (includeImage) {
       console.log('🎨 Generating image with DALL-E 3...');
+      console.log('🔧 Image generation options:', { business: business.name, imageSize, platform });
       try {
         result.generated.image = await generateImages(business, 1, imageSize);
         console.log('✅ Image generated successfully:', result.generated.image);
       } catch (error) {
         console.error('❌ Image generation failed:', error);
+        console.error('❌ Error details:', error.message, error.stack);
         // Don't fail the entire post, just skip image
         result.generated.image = null;
       }
+    } else {
+      console.log('⚠️ Image generation skipped - includeImage is false');
     }
 
     // Process hashtags to extract just the hashtag list
@@ -271,9 +275,14 @@ export async function generatePost(business, options = {}) {
       }
     }
 
+    // Clean caption to remove hashtags (they should be separate)
+    let cleanCaption = result.generated.caption?.text || '';
+    // Remove hashtags from caption text
+    cleanCaption = cleanCaption.replace(/#\w+/g, '').replace(/\s+/g, ' ').trim();
+
     // Combine all content into final post
     const finalPost = {
-      text: result.generated.caption?.text || '',
+      text: cleanCaption, // Use clean caption without hashtags
       hashtags: processedHashtags,
       adCopy: result.generated.adCopy?.text || '',
       imageUrl: result.generated.image?.[0]?.url || null,
@@ -284,7 +293,7 @@ export async function generatePost(business, options = {}) {
       industry: business.industry || 'business',
       createdAt: new Date().toISOString(),
       // Full post text combining caption and hashtags
-      fullText: `${result.generated.caption?.text || ''} ${processedHashtags}`.trim()
+      fullText: `${cleanCaption} ${processedHashtags}`.trim()
     };
 
     console.log('✅ Generated complete post:', finalPost);
