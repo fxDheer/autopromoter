@@ -73,7 +73,8 @@ export async function generateTextContent(business, contentType = 'caption', pla
                  Mix popular and niche hashtags. 
                  Include: ${business.keywords || 'business, growth'}. 
                  Must include at least 10 hashtags. 
-                 Format as a simple list with # symbol before each hashtag.`,
+                 Format as a simple list with # symbol before each hashtag, separated by spaces. 
+                 Example: #DigitalMarketing #SocialMedia #BusinessGrowth`,
       
       adCopy: `Write compelling ad copy for ${business.name} promoting their ${business.industry || 'business'} services. 
                Target: ${business.audience || 'professionals'}. 
@@ -249,13 +250,31 @@ export async function generatePost(business, options = {}) {
 
     // Generate image if requested
     if (includeImage) {
-      result.generated.image = await generateImages(business, 1, imageSize);
+      console.log('🎨 Generating image with DALL-E 3...');
+      try {
+        result.generated.image = await generateImages(business, 1, imageSize);
+        console.log('✅ Image generated successfully:', result.generated.image);
+      } catch (error) {
+        console.error('❌ Image generation failed:', error);
+        // Don't fail the entire post, just skip image
+        result.generated.image = null;
+      }
+    }
+
+    // Process hashtags to extract just the hashtag list
+    let processedHashtags = result.generated.hashtags?.text || '';
+    if (processedHashtags.includes('Here\'s a list') || processedHashtags.includes('trending hashtags')) {
+      // Extract hashtags from the AI response
+      const hashtagMatches = processedHashtags.match(/#\w+/g);
+      if (hashtagMatches && hashtagMatches.length > 0) {
+        processedHashtags = hashtagMatches.join(' ');
+      }
     }
 
     // Combine all content into final post
     const finalPost = {
       text: result.generated.caption?.text || '',
-      hashtags: result.generated.hashtags?.text || '',
+      hashtags: processedHashtags,
       adCopy: result.generated.adCopy?.text || '',
       imageUrl: result.generated.image?.[0]?.url || null,
       platform: platform,
@@ -265,7 +284,7 @@ export async function generatePost(business, options = {}) {
       industry: business.industry || 'business',
       createdAt: new Date().toISOString(),
       // Full post text combining caption and hashtags
-      fullText: `${result.generated.caption?.text || ''} ${result.generated.hashtags?.text || ''}`.trim()
+      fullText: `${result.generated.caption?.text || ''} ${processedHashtags}`.trim()
     };
 
     console.log('✅ Generated complete post:', finalPost);

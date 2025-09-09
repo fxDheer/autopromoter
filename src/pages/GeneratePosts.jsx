@@ -387,7 +387,10 @@ const GeneratePosts = () => {
       }
       
       // Use AI service to generate truly fresh content
-      const aiPosts = await generatePostContent(currentBusiness);
+      const aiPosts = await generateMultiplePosts(currentBusiness, ['Instagram', 'Facebook', 'LinkedIn'], {
+        includeImage: false,
+        contentType: 'full'
+      });
       console.log('🤖 AI Generated posts:', aiPosts);
       
       if (aiPosts && aiPosts.length > 0) {
