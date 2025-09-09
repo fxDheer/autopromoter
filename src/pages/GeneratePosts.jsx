@@ -272,7 +272,10 @@ const GeneratePosts = () => {
       }
       
       setPosts(newPosts);
-      alert(`🔄 New ${contentType} posts generated successfully!`);
+      // Only show alert for text posts to avoid confusion with image posts
+      if (contentType === 'text') {
+        alert(`🔄 New ${contentType} posts generated successfully!`);
+      }
     } catch (error) {
       console.error("Error generating more posts:", error);
       alert("Error generating new posts. Please try again.");
