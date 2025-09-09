@@ -101,100 +101,82 @@ export async function generatePostContent(business) {
   return posts;
 }
 
-// AI Image Generation with diverse random selection
+// AI Image Generation with DALL-E 3
 export async function generateAIImages(business, count = 3) {
   try {
-    console.log('🎨 Generating diverse images for business:', business.name);
+    console.log('🎨 Generating AI images with DALL-E 3 for business:', business.name);
     
-    // Add timestamp to ensure uniqueness
-    const timestamp = Date.now();
-    const randomSeed = Math.random().toString(36).substring(7);
+    if (!openai) {
+      throw new Error('OpenAI not initialized');
+    }
     
-    // Diverse image collections with more variety
-    const imageCollections = {
-      business: [
-        'photo-1551288049-bebda4e38f71', // Business dashboard
-        'photo-1460925895917-afdab827c52f', // Analytics
-        'photo-1522071820081-009f0129c71c', // Team collaboration
-        'photo-1507003211169-0a1dd7228f2d', // Business meeting
-        'photo-1551434678-e076c223a692', // Business strategy
-        'photo-1554224155-6726b3ff858f', // Business growth
-        'photo-1552664730-d307ca884978', // Business success
-        'photo-1553877522-43269d4ea984', // Business technology
-        'photo-1518709268805-4e9042af2176', // Tech dashboard
-        'photo-1559136555-9303baea8ebd', // Business innovation
-        'photo-1507003211169-0a1dd7228f2d', // Modern office
-        'photo-1551434678-e076c223a692', // Strategy meeting
-        'photo-1554224155-6726b3ff858f', // Growth chart
-        'photo-1552664730-d307ca884978', // Success metrics
-        'photo-1553877522-43269d4ea984'  // Technology integration
-      ],
-      technology: [
-        'photo-1518709268805-4e9042af2176', // Tech dashboard
-        'photo-1551288049-bebda4e38f71', // Data visualization
-        'photo-1460925895917-afdab827c52f', // Analytics
-        'photo-1522071820081-009f0129c71c', // Team work
-        'photo-1507003211169-0a1dd7228f2d', // Modern office
-        'photo-1551434678-e076c223a692', // Strategy
-        'photo-1554224155-6726b3ff858f', // Growth
-        'photo-1552664730-d307ca884978', // Success
-        'photo-1553877522-43269d4ea984', // Technology
-        'photo-1559136555-9303baea8ebd', // Innovation
-        'photo-1518709268805-4e9042af2176', // Digital transformation
-        'photo-1551288049-bebda4e38f71', // AI integration
-        'photo-1460925895917-afdab827c52f', // Data analysis
-        'photo-1522071820081-009f0129c71c', // Tech team
-        'photo-1507003211169-0a1dd7228f2d'  // Tech office
-      ],
-      marketing: [
-        'photo-1551288049-bebda4e38f71', // Marketing dashboard
-        'photo-1460925895917-afdab827c52f', // Marketing analytics
-        'photo-1522071820081-009f0129c71c', // Marketing team
-        'photo-1507003211169-0a1dd7228f2d', // Marketing meeting
-        'photo-1551434678-e076c223a692', // Marketing strategy
-        'photo-1554224155-6726b3ff858f', // Marketing growth
-        'photo-1552664730-d307ca884978', // Marketing success
-        'photo-1553877522-43269d4ea984', // Marketing tech
-        'photo-1559136555-9303baea8ebd', // Marketing innovation
-        'photo-1518709268805-4e9042af2176', // Digital marketing
-        'photo-1551288049-bebda4e38f71', // Campaign dashboard
-        'photo-1460925895917-afdab827c52f', // Marketing metrics
-        'photo-1522071820081-009f0129c71c', // Creative team
-        'photo-1507003211169-0a1dd7228f2d', // Marketing office
-        'photo-1551434678-e076c223a692'  // Marketing planning
-      ]
-    };
+    const images = [];
     
-    // Select random images based on business industry
-    const industry = business.industry?.toLowerCase() || 'business';
-    const collection = imageCollections[industry] || imageCollections.business;
+    // Create unique, creative prompts for each image
+    const creativePrompts = [
+      `Create a modern, professional business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting.`,
+      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout.`,
+      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality.`
+    ];
     
-    // Shuffle and select random images
-    const shuffledImages = [...collection].sort(() => Math.random() - 0.5);
-    const selectedImages = shuffledImages.slice(0, count);
+    for (let i = 0; i < count; i++) {
+      try {
+        const prompt = creativePrompts[i] || creativePrompts[0];
+        console.log(`🎨 Generating image ${i + 1} with DALL-E 3: ${prompt}`);
+        
+        const response = await openai.images.generate({
+          model: "dall-e-3",
+          prompt: prompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "hd",
+          style: "natural"
+        });
+        
+        const imageUrl = response.data[0].url;
+        console.log(`✅ DALL-E 3 generated image ${i + 1}: ${imageUrl}`);
+        
+        images.push({
+          url: imageUrl,
+          prompt: prompt,
+          platform: ["Instagram", "Facebook", "LinkedIn"][i] || "Instagram",
+          type: "ai_generated",
+          business: business.name,
+          industry: business.industry || 'business',
+          aiGenerated: true,
+          createdAt: new Date().toISOString()
+        });
+        
+      } catch (error) {
+        console.error(`❌ Error generating image ${i + 1} with DALL-E 3:`, error);
+        
+        // Fallback to creative Unsplash images with unique variations
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substr(2, 9);
+        const fallbackImages = [
+          'photo-1551288049-bebda4e38f71', // Business dashboard
+          'photo-1460925895917-afdab827c52f', // Analytics
+          'photo-1522071820081-009f0129c71c'  // Team collaboration
+        ];
+        
+        images.push({
+          url: `https://images.unsplash.com/${fallbackImages[i] || fallbackImages[0]}?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}_${randomId}`,
+          prompt: `Professional business image for ${business.name}`,
+          platform: ["Instagram", "Facebook", "LinkedIn"][i] || "Instagram",
+          type: "fallback",
+          business: business.name,
+          industry: business.industry || 'business',
+          aiGenerated: false,
+          createdAt: new Date().toISOString()
+        });
+      }
+    }
     
-    const platforms = ["Instagram", "Facebook", "LinkedIn"];
-    const imageTypes = ["infographic", "dashboard", "workflow", "analytics", "strategy", "growth", "success", "technology", "innovation", "efficiency"];
-    
-    const images = selectedImages.map((photoId, index) => {
-      const imageType = imageTypes[Math.floor(Math.random() * imageTypes.length)];
-      const platform = platforms[index] || "Instagram";
-      
-      return {
-        url: `https://images.unsplash.com/${photoId}?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${index}_${Math.random().toString(36).substr(2, 5)}`,
-        prompt: `Professional ${imageType} for ${business.name} in ${business.industry || 'business'} industry`,
-        platform: platform,
-        type: "diverse_random",
-        business: business.name,
-        industry: business.industry || 'business'
-      };
-    });
-    
-    console.log('✅ Generated diverse images:', images);
+    console.log('✅ Generated AI images:', images);
     return images;
     
   } catch (error) {
-    console.error("Error generating images:", error);
+    console.error("❌ Error generating AI images:", error);
     return [];
   }
 }
@@ -204,58 +186,60 @@ export async function generateAIImagePosts(business, count = 3) {
   try {
     console.log('🎨 Generating dynamic image posts for business:', business.name);
     
-    // Generate diverse images
+    // Generate diverse images with DALL-E 3
     const aiImages = await generateAIImages(business, count);
     
-    // Dynamic text templates for image posts
-    const imageTextTemplates = [
+    // Create unique, dynamic text content for each image post
+    const imagePosts = [];
+    const platforms = ["Instagram", "Facebook", "LinkedIn"];
+    
+    // Dynamic content variations that change each time
+    const contentVariations = [
       {
         hooks: ["🎨", "📊", "📈", "💡", "🚀", "⚡", "🎯", "🔥", "🌟", "💪"],
         descriptions: [
-          "Check out this amazing visual representation of our business growth!",
-          "See how our data-driven approach is transforming the industry!",
-          "Discover the power of visual analytics in business!",
-          "Explore our innovative dashboard and insights!",
-          "Get a glimpse into our strategic planning process!",
-          "Witness the impact of our technology solutions!",
-          "See how we're revolutionizing business processes!",
-          "Discover the future of business automation!"
+          "Check out this amazing AI-generated visual representation of our business growth!",
+          "See how our data-driven approach is transforming the industry with AI!",
+          "Discover the power of visual analytics and AI in business!",
+          "Explore our innovative AI-powered dashboard and insights!",
+          "Get a glimpse into our strategic AI planning process!",
+          "Witness the impact of our AI technology solutions!",
+          "See how we're revolutionizing business processes with AI!",
+          "Discover the future of AI-powered business automation!"
         ],
         ctas: [
-          "Ready to see more?",
-          "Want to learn more?",
-          "Interested in our solutions?",
-          "Ready to transform your business?",
-          "Want to get started?",
-          "Ready to join us?",
-          "Want to see results?",
-          "Ready to innovate?"
+          "Ready to see more AI innovations?",
+          "Want to learn more about our AI solutions?",
+          "Interested in our AI-powered automation?",
+          "Ready to transform your business with AI?",
+          "Want to get started with AI?",
+          "Ready to join the AI revolution?",
+          "Want to see AI results?",
+          "Ready to innovate with AI?"
         ]
       }
     ];
     
-    const imagePosts = [];
-    const platforms = ["Instagram", "Facebook", "LinkedIn"];
-    
     for (let i = 0; i < count; i++) {
       const image = aiImages[i] || {
-        url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}_${i}`,
         platform: platforms[i] || "Instagram",
         type: "professional_placeholder",
-        prompt: `Professional business image for ${business.name}`
+        prompt: `Professional business image for ${business.name}`,
+        aiGenerated: false
       };
       
-      // Generate dynamic text content
-      const template = imageTextTemplates[0];
+      // Generate dynamic text content with unique variations
+      const template = contentVariations[0];
       const hook = template.hooks[Math.floor(Math.random() * template.hooks.length)];
       const description = template.descriptions[Math.floor(Math.random() * template.descriptions.length)];
       const cta = template.ctas[Math.floor(Math.random() * template.ctas.length)];
       
       // Create unique hashtag sets for each image post
       const hashtagSets = [
-        ["VisualContent", "BusinessGrowth", "DataAnalytics", "Innovation", "Technology", "DigitalTransformation", "BusinessIntelligence", "Automation", "Efficiency", "Success"],
-        ["Infographic", "Dashboard", "Analytics", "Business", "Growth", "Data", "Insights", "Strategy", "Performance", "Results"],
-        ["AIGenerated", "VisualContent", "BusinessMarketing", "AI", "Innovation", "DigitalMarketing", "Creative", "Professional", "Modern", "Tech"]
+        ["AIGenerated", "BusinessGrowth", "DataAnalytics", "Innovation", "Technology", "DigitalTransformation", "BusinessIntelligence", "Automation", "Efficiency", "Success"],
+        ["VisualContent", "Dashboard", "Analytics", "Business", "Growth", "Data", "Insights", "Strategy", "Performance", "Results"],
+        ["AI", "VisualContent", "BusinessMarketing", "Innovation", "DigitalMarketing", "Creative", "Professional", "Modern", "Tech", "Future"]
       ];
       
       const hashtags = hashtagSets[i] || hashtagSets[0];
@@ -269,7 +253,7 @@ export async function generateAIImagePosts(business, count = 3) {
         type: "image",
         imageUrl: image.url,
         hashtags: hashtags,
-        aiGenerated: true,
+        aiGenerated: image.aiGenerated || false,
         prompt: image.prompt,
         business: business.name,
         industry: business.industry || 'business',
