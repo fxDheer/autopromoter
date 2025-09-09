@@ -69,10 +69,11 @@ export async function generateTextContent(business, contentType = 'caption', pla
                 Make it engaging, professional, and include a call-to-action. 
                 Keep it under 200 characters for optimal engagement.`,
       
-      hashtags: `Generate 10 trending hashtags for ${business.name} in the ${business.industry || 'business'} industry. 
+      hashtags: `Generate 15 trending hashtags for ${business.name} in the ${business.industry || 'business'} industry. 
                  Mix popular and niche hashtags. 
                  Include: ${business.keywords || 'business, growth'}. 
-                 Format as a simple list.`,
+                 Must include at least 10 hashtags. 
+                 Format as a simple list with # symbol before each hashtag.`,
       
       adCopy: `Write compelling ad copy for ${business.name} promoting their ${business.industry || 'business'} services. 
                Target: ${business.audience || 'professionals'}. 
@@ -135,11 +136,11 @@ export async function generateImages(business, count = 3, size = "1024x1024") {
 
     const images = [];
     
-    // Create unique, creative prompts for each image
+    // Create unique, creative prompts with slogans for each image
     const creativePrompts = [
-      `Create a modern, professional business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy.`,
-      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized.`,
-      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style.`
+      `Create a stunning, modern business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Include the slogan "Transform Your Business Today!" Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy, motivational, inspiring.`,
+      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include the slogan "Automate. Innovate. Dominate." Show workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized, creative, eye-catching.`,
+      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include the slogan "Success Starts Here!" Show charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style, motivational, powerful.`
     ];
     
     for (let i = 0; i < count; i++) {
@@ -326,8 +327,8 @@ function generateFallbackText(business, contentType, platform) {
   const audience = business.audience || 'professionals';
   
   const fallbackTemplates = {
-    caption: `🚀 Transform your ${industry} with ${businessName}! Discover how our innovative solutions help ${audience} achieve success. Ready to take your business to the next level? 💪 #${industry} #BusinessGrowth #Innovation`,
-    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future`,
+    caption: `🚀 Transform your ${industry} with ${businessName}! Discover how our innovative solutions help ${audience} achieve success. Ready to take your business to the next level? 💪`,
+    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement`,
     adCopy: `Don't miss out! ${businessName} is revolutionizing the ${industry} industry. Join thousands of ${audience} who are already seeing results. Limited time offer - act now!`
   };
   
@@ -356,16 +357,16 @@ function generateFallbackPost(business, options = {}) {
   
   return {
     text: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪`,
-    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology`,
+    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement`,
     adCopy: `Don't miss out! ${businessName} is revolutionizing the ${industry} industry. Join thousands of professionals seeing results.`,
-    imageUrl: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=1024&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
+    imageUrl: `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=512&h=512&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}`,
     platform: platform,
     type: options.includeImage ? 'image' : 'text',
     aiGenerated: false,
     business: businessName,
     industry: industry,
     createdAt: new Date().toISOString(),
-    fullText: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪 #${industry} #BusinessGrowth #Innovation #Success #Professional #Technology`
+    fullText: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪 #${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement`
   };
 }
 

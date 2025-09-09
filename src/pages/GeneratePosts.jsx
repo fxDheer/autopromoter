@@ -305,7 +305,7 @@ const GeneratePosts = () => {
           console.log('🎨 Generating AI image posts with DALL-E 3...');
           newPosts = await generateMultiplePosts(business, ['Instagram', 'Facebook', 'LinkedIn'], {
             includeImage: true,
-            imageSize: '1024x1024', // High quality images
+            imageSize: '512x512', // Cost-efficient 512x512 images
             contentType: 'full'
           });
           console.log('✅ AI image posts generated:', newPosts);
@@ -346,6 +346,9 @@ const GeneratePosts = () => {
       // Only show alert for text posts to avoid confusion with image posts
       if (contentType === 'text') {
         alert(`🔄 New ${contentType} posts generated successfully with OpenAI!`);
+      } else if (contentType === 'image') {
+        // Silent generation for image posts - no popup
+        console.log('✅ Image posts generated successfully');
       }
     } catch (error) {
       console.error("Error generating more posts:", error);
