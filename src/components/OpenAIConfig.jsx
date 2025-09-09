@@ -133,7 +133,7 @@ const OpenAIConfig = ({ isOpen, onClose, onSave, currentKey = '' }) => {
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• 📝 GPT-4.1-mini for captions, hashtags, and ad copy</li>
             <li>• 🎨 DALL-E 3 for AI-generated images</li>
-           • 💰 Cost-efficient content generation</li>
+            <li>• 💰 Cost-efficient content generation</li>
             <li>• 🚀 Professional-quality social media posts</li>
           </ul>
         </div>
