@@ -305,7 +305,7 @@ const GeneratePosts = () => {
           console.log('🎨 Generating AI image posts with DALL-E 3...');
           newPosts = await generateMultiplePosts(business, ['Instagram', 'Facebook', 'LinkedIn'], {
             includeImage: true,
-            imageSize: '512x512', // Cost-efficient 512x512 images
+            imageSize: '1024x1024', // DALL-E 3 only supports 1024x1024, 1024x1792, 1792x1024
             contentType: 'full'
           });
           console.log('✅ AI image posts generated:', newPosts);
@@ -389,7 +389,7 @@ const GeneratePosts = () => {
       // Use AI service to generate truly fresh content based on current content type
       const aiPosts = await generateMultiplePosts(currentBusiness, ['Instagram', 'Facebook', 'LinkedIn'], {
         includeImage: contentType === 'image',
-        imageSize: contentType === 'image' ? '512x512' : undefined,
+        imageSize: contentType === 'image' ? '1024x1024' : undefined, // DALL-E 3 only supports 1024x1024, 1024x1792, 1792x1024
         contentType: 'full'
       });
       console.log('🤖 AI Generated posts:', aiPosts);
