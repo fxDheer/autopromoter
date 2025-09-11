@@ -151,14 +151,17 @@ export async function generateImages(business, count = 3, size = "1024x1024") {
 
     const images = [];
     
-    // Create unique, creative prompts with diverse slogans for each image
+    // Create unique, creative prompts with diverse slogans and styles for each image
     const creativePrompts = [
       `Create a stunning, modern business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Include the text "TRANSFORM YOUR BUSINESS TODAY" in large, clear, professional typography. Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy, motivational, inspiring.`,
       `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include the text "AUTOMATE. INNOVATE. DOMINATE" in bold, clear letters. Show workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized, creative, eye-catching.`,
       `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include the text "SUCCESS STARTS HERE" in prominent, readable typography. Show charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style, motivational, powerful.`,
       `Create a futuristic business concept image for ${business.name} featuring the text "FUTURE-READY SOLUTIONS" in clear, modern font. Show advanced technology, AI integration, and digital innovation. Style: futuristic, high-tech, modern, professional, Instagram-optimized, inspiring, cutting-edge.`,
       `Design a professional team collaboration visualization for ${business.name} with the text "TOGETHER WE ACHIEVE MORE" in bold, readable letters. Show teamwork, communication, and business success. Style: collaborative, professional, modern, engaging, social media ready, motivational, inspiring.`,
-      `Generate a data-driven business analytics image for ${business.name} featuring the text "DATA-DRIVEN SUCCESS" in clear, professional typography. Show charts, metrics, and business intelligence. Style: analytical, professional, modern, data-focused, Instagram-worthy, informative, powerful.`
+      `Generate a data-driven business analytics image for ${business.name} featuring the text "DATA-DRIVEN SUCCESS" in clear, professional typography. Show charts, metrics, and business intelligence. Style: analytical, professional, modern, data-focused, Instagram-worthy, informative, powerful.`,
+      `Create a cartoonish, animated business character for ${business.name} with the text "GROW YOUR BUSINESS" in fun, colorful typography. Show a friendly business mascot, growth charts, and success elements. Style: cartoon, animated, colorful, playful, character-based, social media friendly, engaging, fun.`,
+      `Design a character-style illustration for ${business.name} featuring the text "INNOVATION DRIVES SUCCESS" in bold, animated letters. Show business characters, technology elements, and growth symbols. Style: character illustration, animated, vibrant colors, engaging, social media optimized, motivational, creative.`,
+      `Generate an animated business scene for ${business.name} with the text "DIGITAL TRANSFORMATION" in dynamic, colorful typography. Show animated business processes, technology integration, and success metrics. Style: animated, colorful, dynamic, engaging, social media ready, modern, inspiring.`
     ];
     
     for (let i = 0; i < count; i++) {
@@ -300,6 +303,7 @@ export async function generatePost(business, options = {}) {
 
     // Process hashtags to extract just the hashtag list
     let processedHashtags = result.generated.hashtags?.text || '';
+    console.log('🔍 Raw hashtag response:', processedHashtags);
     
     // Extract hashtags from any AI response format
     const hashtagMatches = processedHashtags.match(/#\w+/g);
@@ -308,6 +312,9 @@ export async function generatePost(business, options = {}) {
       console.log('✅ Processed hashtags:', processedHashtags);
     } else {
       console.warn('⚠️ No hashtags found in AI response:', processedHashtags);
+      // Fallback: create basic hashtags
+      processedHashtags = `#${business.name.replace(/\s+/g, '')} #DigitalMarketing #SocialMedia #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement`;
+      console.log('🔄 Using fallback hashtags:', processedHashtags);
     }
 
     // Clean caption to remove hashtags (they should be separate)
