@@ -67,31 +67,56 @@ export async function generateTextContent(business, contentType = 'caption', pla
     const uniqueId = `${timestamp}_${randomSeed}`;
     
     // Create platform-specific prompts for cost efficiency with anti-repetition
+    const randomThemes = [
+      "success story", "growth journey", "digital transformation", "market leadership", "innovation breakthrough", 
+      "competitive advantage", "business evolution", "strategic partnership", "performance optimization", "brand elevation"
+    ];
+    const randomApproaches = [
+      "data-driven", "customer-focused", "results-oriented", "strategic", "innovative", "proven", "cutting-edge", "expert-led", "customized", "transformative"
+    ];
+    const randomCallToActions = [
+      "Let's connect and explore possibilities", "Ready to take the next step", "Join the conversation", "Discover your potential", "Start your journey", "Unlock new opportunities", "Transform your approach", "Elevate your strategy", "Connect with us today", "Begin your transformation"
+    ];
+    
+    const selectedTheme = randomThemes[Math.floor(Math.random() * randomThemes.length)];
+    const selectedApproach = randomApproaches[Math.floor(Math.random() * randomApproaches.length)];
+    const selectedCTA = randomCallToActions[Math.floor(Math.random() * randomCallToActions.length)];
+    
     const prompts = {
-      caption: `Write a catchy ${platform} caption for ${business.name} (${business.industry || 'business'} industry). 
+      caption: `Create a completely unique and fresh ${platform} caption for ${business.name} (${business.industry || 'business'} industry). 
                 Target audience: ${business.audience || 'professionals'}. 
                 Keywords: ${business.keywords || 'business, growth'}. 
-                Make it engaging, professional, and include a call-to-action. 
+                Theme focus: ${selectedTheme}
+                Approach: ${selectedApproach}
+                Call-to-action: ${selectedCTA}
+                Make it engaging, professional, and include the specific call-to-action above. 
                 Keep it under 200 characters for optimal engagement.
-                IMPORTANT: Create something completely unique and fresh. Avoid generic phrases like "transform your business", "revolutionize", "innovative solutions".
-                Use specific, actionable language. Make it stand out from typical posts.
+                CRITICAL: This must be completely different from any previous content. Use unique angles, fresh perspectives, and original language.
+                Avoid these overused phrases: "transform your business", "revolutionize", "innovative solutions", "unlock potential", "elevate your brand".
+                Create something that stands out and feels completely new.
                 Unique ID: ${uniqueId}`,
       
-      hashtags: `Generate 15 trending hashtags for ${business.name} in the ${business.industry || 'business'} industry. 
+      hashtags: `Generate 15 completely unique and fresh hashtags for ${business.name} in the ${business.industry || 'business'} industry. 
                  Mix popular and niche hashtags. 
                  Include: ${business.keywords || 'business, growth'}. 
-                 Must include at least 15 hashtags. 
+                 Must include exactly 15 hashtags. 
                  Format as a simple list with # symbol before each hashtag, separated by spaces. 
-                 Create unique combinations that haven't been used before.
-                 Example: #DigitalMarketing #SocialMedia #BusinessGrowth
+                 CRITICAL: Create completely unique combinations that are different from any previous hashtag sets.
+                 Avoid generic hashtags like #BusinessGrowth #Innovation #Success - be more specific and creative.
+                 Focus on: ${selectedTheme} and ${selectedApproach} approach
+                 Example format: #DigitalMarketing #SocialMedia #BusinessGrowth
                  Unique ID: ${uniqueId}`,
       
-      adCopy: `Write compelling ad copy for ${business.name} promoting their ${business.industry || 'business'} services. 
+      adCopy: `Write completely unique and fresh ad copy for ${business.name} promoting their ${business.industry || 'business'} services. 
                Target: ${business.audience || 'professionals'}. 
+               Theme focus: ${selectedTheme}
+               Approach: ${selectedApproach}
+               Call-to-action: ${selectedCTA}
                Focus on benefits, urgency, and clear value proposition. 
                Keep it concise and action-oriented.
-               IMPORTANT: Create something completely unique and fresh. Avoid generic phrases.
-               Use specific, actionable language that stands out.
+               CRITICAL: This must be completely different from any previous ad copy. Use unique angles, fresh perspectives, and original language.
+               Avoid these overused phrases: "transform your business", "revolutionize", "innovative solutions", "unlock potential", "elevate your brand", "cutting-edge", "proven results".
+               Create something that feels completely new and stands out.
                Unique ID: ${uniqueId}`
     };
 
@@ -110,7 +135,7 @@ export async function generateTextContent(business, contentType = 'caption', pla
         }
       ],
       max_tokens: 300, // Limit tokens for cost efficiency
-      temperature: 0.9, // Higher creativity for more unique content
+      temperature: 1.2, // Maximum creativity for completely unique content
     });
 
     const generatedText = response.choices[0].message.content.trim();
