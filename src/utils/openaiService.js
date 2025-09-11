@@ -153,12 +153,12 @@ export async function generateImages(business, count = 3, size = "1024x1024") {
     
     // Create unique, creative prompts with diverse slogans for each image
     const creativePrompts = [
-      `Create a stunning, modern business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Include the bold slogan "Transform Your Business Today!" Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy, motivational, inspiring.`,
-      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include the powerful slogan "Automate. Innovate. Dominate." Show workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized, creative, eye-catching.`,
-      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include the motivational slogan "Success Starts Here!" Show charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style, motivational, powerful.`,
-      `Create a futuristic business concept image for ${business.name} featuring the slogan "Future-Ready Solutions!" Show advanced technology, AI integration, and digital innovation. Style: futuristic, high-tech, modern, professional, Instagram-optimized, inspiring, cutting-edge.`,
-      `Design a professional team collaboration visualization for ${business.name} with the slogan "Together We Achieve More!" Show teamwork, communication, and business success. Style: collaborative, professional, modern, engaging, social media ready, motivational, inspiring.`,
-      `Generate a data-driven business analytics image for ${business.name} featuring the slogan "Data-Driven Success!" Show charts, metrics, and business intelligence. Style: analytical, professional, modern, data-focused, Instagram-worthy, informative, powerful.`
+      `Create a stunning, modern business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Include the text "TRANSFORM YOUR BUSINESS TODAY" in large, clear, professional typography. Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy, motivational, inspiring.`,
+      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include the text "AUTOMATE. INNOVATE. DOMINATE" in bold, clear letters. Show workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized, creative, eye-catching.`,
+      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include the text "SUCCESS STARTS HERE" in prominent, readable typography. Show charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style, motivational, powerful.`,
+      `Create a futuristic business concept image for ${business.name} featuring the text "FUTURE-READY SOLUTIONS" in clear, modern font. Show advanced technology, AI integration, and digital innovation. Style: futuristic, high-tech, modern, professional, Instagram-optimized, inspiring, cutting-edge.`,
+      `Design a professional team collaboration visualization for ${business.name} with the text "TOGETHER WE ACHIEVE MORE" in bold, readable letters. Show teamwork, communication, and business success. Style: collaborative, professional, modern, engaging, social media ready, motivational, inspiring.`,
+      `Generate a data-driven business analytics image for ${business.name} featuring the text "DATA-DRIVEN SUCCESS" in clear, professional typography. Show charts, metrics, and business intelligence. Style: analytical, professional, modern, data-focused, Instagram-worthy, informative, powerful.`
     ];
     
     for (let i = 0; i < count; i++) {
@@ -300,12 +300,14 @@ export async function generatePost(business, options = {}) {
 
     // Process hashtags to extract just the hashtag list
     let processedHashtags = result.generated.hashtags?.text || '';
-    if (processedHashtags.includes('Here\'s a list') || processedHashtags.includes('trending hashtags')) {
-      // Extract hashtags from the AI response
-      const hashtagMatches = processedHashtags.match(/#\w+/g);
-      if (hashtagMatches && hashtagMatches.length > 0) {
-        processedHashtags = hashtagMatches.join(' ');
-      }
+    
+    // Extract hashtags from any AI response format
+    const hashtagMatches = processedHashtags.match(/#\w+/g);
+    if (hashtagMatches && hashtagMatches.length > 0) {
+      processedHashtags = hashtagMatches.join(' ');
+      console.log('✅ Processed hashtags:', processedHashtags);
+    } else {
+      console.warn('⚠️ No hashtags found in AI response:', processedHashtags);
     }
 
     // Clean caption to remove hashtags (they should be separate)
