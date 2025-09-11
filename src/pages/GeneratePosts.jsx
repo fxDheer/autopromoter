@@ -4,6 +4,8 @@ import ApiConfigModal from "../components/ApiConfigModal";
 import AILearningDashboard from "../components/AILearningDashboard";
 import ClientSelector from "../components/ClientSelector";
 import OpenAIConfig from "../components/OpenAIConfig";
+import ScheduleModal from "../components/ScheduleModal";
+import ScheduledPosts from "../components/ScheduledPosts";
 import { autoPostToSocialMediaWithPlatformPosts, validateApiKeys } from "../utils/socialMediaService";
 import autoLearningService from "../utils/autoLearningService";
 import { loadEnvironmentVariables, convertToApiConfig } from "../utils/envLoader";
@@ -28,6 +30,9 @@ const GeneratePosts = () => {
   const [autoPostResults, setAutoPostResults] = useState([]);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
   const [currentClient, setCurrentClient] = useState('auto-promoter');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduledPosts, setScheduledPosts] = useState([]);
+  const [showScheduledPosts, setShowScheduledPosts] = useState(false);
 
   // Force re-render when apiConfig changes
   useEffect(() => {
@@ -35,7 +40,32 @@ const GeneratePosts = () => {
   }, [apiConfig]);
 
   const handleSchedulePosts = () => {
-    alert("📅 Scheduling Feature Coming Soon!\n\nThis will integrate with:\n• Buffer\n• Hootsuite\n• Facebook Business\n• Instagram Business\n• LinkedIn\n• TikTok Business\n• YouTube Shorts\n\nYour posts will be automatically scheduled and published!");
+    if (posts.length === 0) {
+      alert('Please generate some posts first before scheduling!');
+      return;
+    }
+    setShowScheduleModal(true);
+  };
+
+  const handleSchedule = (scheduledPostsData) => {
+    const newScheduledPosts = [...scheduledPosts, ...scheduledPostsData];
+    setScheduledPosts(newScheduledPosts);
+    
+    // Save to localStorage
+    localStorage.setItem(`autopromoter_scheduled_posts_${currentClient}`, JSON.stringify(newScheduledPosts));
+    
+    alert(`✅ Successfully scheduled ${scheduledPostsData.length} posts!`);
+  };
+
+  const handleDeleteScheduledPost = (index) => {
+    const newScheduledPosts = scheduledPosts.filter((_, i) => i !== index);
+    setScheduledPosts(newScheduledPosts);
+    localStorage.setItem(`autopromoter_scheduled_posts_${currentClient}`, JSON.stringify(newScheduledPosts));
+  };
+
+  const handleEditScheduledPost = (post, index) => {
+    // For now, just show an alert. In a full implementation, you'd open an edit modal
+    alert(`Edit functionality for scheduled post will be implemented in the next update!\n\nPost: ${post.text.substring(0, 50)}...`);
   };
 
   const handleAutoPost = async () => {
@@ -737,6 +767,12 @@ const GeneratePosts = () => {
           setCurrentClient(savedClient);
         }
 
+        // Load scheduled posts for current client
+        const savedScheduledPosts = localStorage.getItem(`autopromoter_scheduled_posts_${savedClient || 'auto-promoter'}`);
+        if (savedScheduledPosts) {
+          setScheduledPosts(JSON.parse(savedScheduledPosts));
+        }
+
         // Check if business data was passed through navigation
         if (location.state && location.state.business) {
           console.log("Using business data from navigation:", location.state.business);
@@ -902,6 +938,23 @@ const GeneratePosts = () => {
               >
                 Try Again
               </button>
+            </div>
+          ) : showScheduledPosts ? (
+            <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">📅 Scheduled Posts</h2>
+                <button
+                  onClick={() => setShowScheduledPosts(false)}
+                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  ← Back to Posts
+                </button>
+              </div>
+              <ScheduledPosts
+                scheduledPosts={scheduledPosts}
+                onDelete={handleDeleteScheduledPost}
+                onEdit={handleEditScheduledPost}
+              />
             </div>
           ) : posts.length > 0 ? (
             <div className="space-y-8">
@@ -1280,6 +1333,12 @@ const GeneratePosts = () => {
                     📅 Schedule Posts
                   </button>
                   <button 
+                    onClick={() => setShowScheduledPosts(!showScheduledPosts)}
+                    className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-2xl"
+                  >
+                    {showScheduledPosts ? '📝 Hide Scheduled' : '📋 View Scheduled'} ({scheduledPosts.length})
+                  </button>
+                  <button 
                     onClick={() => handleGenerateMore()}
                     disabled={generating}
                     className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
@@ -1338,6 +1397,14 @@ const GeneratePosts = () => {
         onClose={() => setShowOpenAIConfig(false)}
         onSave={handleOpenAISave}
         currentKey={openAIKey}
+      />
+
+      {/* Schedule Modal */}
+      <ScheduleModal 
+        isOpen={showScheduleModal} 
+        onClose={() => setShowScheduleModal(false)} 
+        onSchedule={handleSchedule}
+        posts={posts}
       />
     </div>
   );
