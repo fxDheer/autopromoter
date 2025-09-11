@@ -366,7 +366,7 @@ const GeneratePosts = () => {
     }
   };
 
-  // Generate completely fresh posts using AI (Gemini)
+  // Generate completely fresh posts using AI (OpenAI)
   const generateFreshPosts = async (businessData) => {
     try {
       console.log('🔄 Generated fresh posts with anti-repetition logic:', businessData);
@@ -386,9 +386,10 @@ const GeneratePosts = () => {
         return [];
       }
       
-      // Use AI service to generate truly fresh content
+      // Use AI service to generate truly fresh content based on current content type
       const aiPosts = await generateMultiplePosts(currentBusiness, ['Instagram', 'Facebook', 'LinkedIn'], {
-        includeImage: false,
+        includeImage: contentType === 'image',
+        imageSize: contentType === 'image' ? '512x512' : undefined,
         contentType: 'full'
       });
       console.log('🤖 AI Generated posts:', aiPosts);
@@ -400,7 +401,7 @@ const GeneratePosts = () => {
           ...post,
           id: `${post.platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now() + index,
-          type: "text"
+          type: contentType || "text"
         }));
       } else {
         console.warn('⚠️ AI posts empty, falling back to templates');
