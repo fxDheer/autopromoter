@@ -61,25 +61,38 @@ export async function generateTextContent(business, contentType = 'caption', pla
       throw new Error('OpenAI not initialized');
     }
 
-    // Create platform-specific prompts for cost efficiency
+    // Add unique elements to prevent repetition
+    const timestamp = Date.now();
+    const randomSeed = Math.random().toString(36).substr(2, 9);
+    const uniqueId = `${timestamp}_${randomSeed}`;
+    
+    // Create platform-specific prompts for cost efficiency with anti-repetition
     const prompts = {
       caption: `Write a catchy ${platform} caption for ${business.name} (${business.industry || 'business'} industry). 
                 Target audience: ${business.audience || 'professionals'}. 
                 Keywords: ${business.keywords || 'business, growth'}. 
                 Make it engaging, professional, and include a call-to-action. 
-                Keep it under 200 characters for optimal engagement.`,
+                Keep it under 200 characters for optimal engagement.
+                IMPORTANT: Create something completely unique and fresh. Avoid generic phrases like "transform your business", "revolutionize", "innovative solutions".
+                Use specific, actionable language. Make it stand out from typical posts.
+                Unique ID: ${uniqueId}`,
       
       hashtags: `Generate 15 trending hashtags for ${business.name} in the ${business.industry || 'business'} industry. 
                  Mix popular and niche hashtags. 
                  Include: ${business.keywords || 'business, growth'}. 
-                 Must include at least 10 hashtags. 
+                 Must include at least 15 hashtags. 
                  Format as a simple list with # symbol before each hashtag, separated by spaces. 
-                 Example: #DigitalMarketing #SocialMedia #BusinessGrowth`,
+                 Create unique combinations that haven't been used before.
+                 Example: #DigitalMarketing #SocialMedia #BusinessGrowth
+                 Unique ID: ${uniqueId}`,
       
       adCopy: `Write compelling ad copy for ${business.name} promoting their ${business.industry || 'business'} services. 
                Target: ${business.audience || 'professionals'}. 
                Focus on benefits, urgency, and clear value proposition. 
-               Keep it concise and action-oriented.`
+               Keep it concise and action-oriented.
+               IMPORTANT: Create something completely unique and fresh. Avoid generic phrases.
+               Use specific, actionable language that stands out.
+               Unique ID: ${uniqueId}`
     };
 
     const prompt = prompts[contentType] || prompts.caption;
@@ -97,7 +110,7 @@ export async function generateTextContent(business, contentType = 'caption', pla
         }
       ],
       max_tokens: 300, // Limit tokens for cost efficiency
-      temperature: 0.7, // Balance creativity and consistency
+      temperature: 0.9, // Higher creativity for more unique content
     });
 
     const generatedText = response.choices[0].message.content.trim();
@@ -109,7 +122,8 @@ export async function generateTextContent(business, contentType = 'caption', pla
       platform: platform,
       model: "gpt-4o-mini",
       cost: "low", // Cost-efficient model
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      uniqueId: uniqueId
     };
 
   } catch (error) {
@@ -137,11 +151,14 @@ export async function generateImages(business, count = 3, size = "1024x1024") {
 
     const images = [];
     
-    // Create unique, creative prompts with slogans for each image
+    // Create unique, creative prompts with diverse slogans for each image
     const creativePrompts = [
-      `Create a stunning, modern business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Include the slogan "Transform Your Business Today!" Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy, motivational, inspiring.`,
-      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include the slogan "Automate. Innovate. Dominate." Show workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized, creative, eye-catching.`,
-      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include the slogan "Success Starts Here!" Show charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style, motivational, powerful.`
+      `Create a stunning, modern business dashboard visualization for ${business.name} in the ${business.industry || 'business'} industry. Include the bold slogan "Transform Your Business Today!" Show data analytics, growth charts, and digital transformation elements. Style: clean, modern, corporate, high-tech, 3D rendered, professional lighting, Instagram-worthy, motivational, inspiring.`,
+      `Design an innovative infographic showing business automation and AI integration for ${business.name}. Include the powerful slogan "Automate. Innovate. Dominate." Show workflow diagrams, efficiency metrics, and technology elements. Style: professional, engaging, data-driven, modern design, clean layout, social media optimized, creative, eye-catching.`,
+      `Generate a creative business strategy visualization for ${business.name} showing growth, innovation, and success. Include the motivational slogan "Success Starts Here!" Show charts, graphs, and modern business elements. Style: dynamic, professional, inspiring, corporate design, high quality, Instagram-style, motivational, powerful.`,
+      `Create a futuristic business concept image for ${business.name} featuring the slogan "Future-Ready Solutions!" Show advanced technology, AI integration, and digital innovation. Style: futuristic, high-tech, modern, professional, Instagram-optimized, inspiring, cutting-edge.`,
+      `Design a professional team collaboration visualization for ${business.name} with the slogan "Together We Achieve More!" Show teamwork, communication, and business success. Style: collaborative, professional, modern, engaging, social media ready, motivational, inspiring.`,
+      `Generate a data-driven business analytics image for ${business.name} featuring the slogan "Data-Driven Success!" Show charts, metrics, and business intelligence. Style: analytical, professional, modern, data-focused, Instagram-worthy, informative, powerful.`
     ];
     
     for (let i = 0; i < count; i++) {
@@ -176,19 +193,34 @@ export async function generateImages(business, count = 3, size = "1024x1024") {
         
       } catch (error) {
         console.error(`❌ Error generating image ${i + 1} with DALL-E 3:`, error);
+        console.error(`❌ Error details:`, error.message);
+        console.error(`❌ Error code:`, error.code);
+        console.error(`❌ Error type:`, error.type);
         
-        // Fallback to creative Unsplash images
+        // Check for specific error types
+        if (error.code === 'insufficient_quota') {
+          console.error('💳 DALL-E quota exceeded - using fallback images');
+        } else if (error.code === 'invalid_api_key') {
+          console.error('🔑 Invalid OpenAI API key - using fallback images');
+        } else if (error.code === 'rate_limit_exceeded') {
+          console.error('⏰ Rate limit exceeded - using fallback images');
+        }
+        
+        // Fallback to creative Unsplash images with unique timestamps
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substr(2, 9);
         const fallbackImages = [
           'photo-1551288049-bebda4e38f71', // Business dashboard
           'photo-1460925895917-afdab827c52f', // Analytics
-          'photo-1522071820081-009f0129c71c'  // Team collaboration
+          'photo-1522071820081-009f0129c71c', // Team collaboration
+          'photo-1507003211169-0a1dd7228f2d', // Business meeting
+          'photo-1553877522-43269d4ea984', // Technology
+          'photo-1551434678-e076c223a692'  // Data visualization
         ];
         
         images.push({
           url: `https://images.unsplash.com/${fallbackImages[i] || fallbackImages[0]}?w=${size.split('x')[0]}&h=${size.split('x')[1]}&fit=crop&crop=center&auto=format&q=80&sig=${timestamp}_${i}_${randomId}`,
-          prompt: `Professional business image for ${business.name}`,
+          prompt: `Professional business image for ${business.name} - ${creativePrompts[i]?.split('"')[1] || 'Business Success'}`,
           platform: ["Instagram", "Facebook", "LinkedIn"][i] || "Instagram",
           type: "fallback",
           business: business.name,
@@ -196,7 +228,8 @@ export async function generateImages(business, count = 3, size = "1024x1024") {
           aiGenerated: false,
           size: size,
           model: "unsplash",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          slogan: creativePrompts[i]?.split('"')[1] || 'Business Success'
         });
       }
     }
@@ -409,7 +442,7 @@ function generateFallbackPost(business, options = {}) {
   
   return {
     text: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪`,
-    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement #DigitalMarketing #SocialMedia #Automation #BusinessTools #Strategy #Performance #Excellence #Motivation #Inspiration #Achievement #Success #Growth #Excellence #Motivation #Inspiration #Achievement`,
+    hashtags: `#${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement #DigitalMarketing #SocialMedia #Automation #BusinessTools #Strategy #Performance #Growth #Excellence #Motivation #Inspiration #Achievement`,
     adCopy: `Don't miss out! ${businessName} is revolutionizing the ${industry} industry. Join thousands of professionals seeing results.`,
     imageUrl: options.includeImage ? `https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=512&h=512&fit=crop&crop=center&auto=format&q=80&sig=${Date.now()}` : null,
     platform: platform,
@@ -418,7 +451,7 @@ function generateFallbackPost(business, options = {}) {
     business: businessName,
     industry: industry,
     createdAt: new Date().toISOString(),
-    fullText: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪 #${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement #DigitalMarketing #SocialMedia #Automation #BusinessTools #Strategy #Performance #Excellence #Motivation #Inspiration #Achievement #Success #Growth #Excellence #Motivation #Inspiration #Achievement`
+    fullText: `🚀 Transform your ${industry} with ${businessName}! Discover innovative solutions that drive results. Ready to succeed? 💪 #${industry} #BusinessGrowth #Innovation #Success #Professional #Technology #DigitalTransformation #Efficiency #Results #Future #Leadership #Excellence #Motivation #Inspiration #Achievement #DigitalMarketing #SocialMedia #Automation #BusinessTools #Strategy #Performance #Growth #Excellence #Motivation #Inspiration #Achievement`
   };
 }
 
