@@ -17,6 +17,7 @@ const contentRoutes = require('./routes/content');
 const businessRoutes = require('./routes/business');
 const zapierRoutes = require('./routes/zapier');
 const webhookRoutes = require('./routes/webhooks');
+const schedulerRoutes = require('./routes/scheduler');
 
 // Middleware
 app.use(helmet()); // Security headers
@@ -72,6 +73,7 @@ app.use('/api/social-media', socialMediaRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/zapier', zapierRoutes);
+app.use('/api/scheduler', schedulerRoutes);
 app.use('/webhooks', webhookRoutes);
 
 // Health check endpoint
@@ -112,7 +114,8 @@ if (process.env.NODE_ENV !== 'production') {
         socialMedia: '/api/social-media',
         content: '/api/content',
         business: '/api/business',
-        zapier: '/api/zapier'
+        zapier: '/api/zapier',
+        scheduler: '/api/scheduler'
       }
     });
   });
@@ -132,8 +135,10 @@ app.listen(PORT, () => {
   console.log(`🚀 Auto-Promoter Backend Server running on port ${PORT}`);
   console.log(`📱 Social Media APIs: Ready`);
   console.log(`🤖 AI Content Generation: Ready`);
+  console.log(`📅 Post Scheduler: Ready`);
   console.log(`🔑 API Endpoints: http://localhost:${PORT}/api`);
   console.log(`🌐 Health Check: http://localhost:${PORT}/api/health`);
+  console.log(`⏰ Scheduler Status: http://localhost:${PORT}/api/scheduler/status`);
 });
 
 module.exports = app;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { scheduleMultiplePosts, testBackendConnection } from '../utils/schedulerService';
 
 const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
   const [selectedPosts, setSelectedPosts] = useState([]);
@@ -8,6 +9,8 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
   const [recurring, setRecurring] = useState(false);
   const [recurringType, setRecurringType] = useState('daily');
   const [recurringEnd, setRecurringEnd] = useState('');
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [backendConnected, setBackendConnected] = useState(false);
 
   const platforms = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube'];
 
@@ -26,6 +29,14 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
       
       // Select all platforms by default
       setSelectedPlatforms([...platforms]);
+      
+      // Test backend connection
+      testBackendConnection().then(result => {
+        setBackendConnected(result.connected);
+        if (!result.connected) {
+          console.warn('⚠️ Backend scheduler not available, using localStorage only');
+        }
+      });
     }
   }, [isOpen, posts]);
 
@@ -45,7 +56,7 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
     );
   };
 
-  const handleSchedule = () => {
+  const handleSchedule = async () => {
     if (selectedPosts.length === 0) {
       alert('Please select at least one post to schedule');
       return;
@@ -61,18 +72,99 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
       return;
     }
 
-    const scheduledPosts = selectedPosts.map(index => ({
-      ...posts[index],
-      scheduledDate: `${scheduleDate}T${scheduleTime}:00`,
-      platforms: selectedPlatforms,
-      recurring: recurring,
-      recurringType: recurringType,
-      recurringEnd: recurringEnd,
-      status: 'scheduled'
-    }));
+    const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}`);
+    const now = new Date();
 
-    onSchedule(scheduledPosts);
-    onClose();
+    if (scheduledDateTime <= now) {
+      alert('Please select a future date and time');
+      return;
+    }
+
+    setIsScheduling(true);
+
+    try {
+      // Create scheduled posts for backend API
+      const backendPosts = [];
+      
+      selectedPosts.forEach(postIndex => {
+        selectedPlatforms.forEach(platform => {
+          const originalPost = posts[postIndex];
+          const scheduledPost = {
+            text: originalPost.text,
+            hashtags: originalPost.hashtags,
+            adCopy: originalPost.adCopy,
+            imageUrl: originalPost.imageUrl,
+            platform: platform,
+            scheduledTime: scheduledDateTime.toISOString(),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            recurring: recurring ? {
+              enabled: true,
+              frequency: recurringType,
+              endDate: recurringEnd || null
+            } : { enabled: false },
+            metadata: {
+              originalId: originalPost.id,
+              business: originalPost.business,
+              industry: originalPost.industry,
+              aiGenerated: originalPost.aiGenerated,
+              type: originalPost.type
+            }
+          };
+          
+          backendPosts.push(scheduledPost);
+        });
+      });
+
+      // Create posts for localStorage (legacy format)
+      const localPosts = selectedPosts.map(index => ({
+        ...posts[index],
+        scheduledDate: `${scheduleDate}T${scheduleTime}:00`,
+        scheduledTime: scheduledDateTime.toISOString(),
+        platforms: selectedPlatforms,
+        recurring: recurring,
+        recurringType: recurringType,
+        recurringEnd: recurringEnd,
+        status: 'scheduled',
+        id: `scheduled_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      }));
+
+      // Try to schedule with backend first
+      if (backendConnected) {
+        try {
+          console.log('📅 Scheduling posts with backend API...');
+          await scheduleMultiplePosts(backendPosts);
+          console.log('✅ Successfully scheduled posts with backend');
+          
+          // Also save to localStorage for backup
+          onSchedule(localPosts);
+          
+          alert(`✅ Successfully scheduled ${backendPosts.length} posts with backend scheduler!`);
+        } catch (backendError) {
+          console.warn('⚠️ Backend scheduling failed, falling back to localStorage:', backendError);
+          
+          // Fallback to localStorage
+          onSchedule(localPosts);
+          alert(`⚠️ Scheduled ${localPosts.length} posts locally (backend unavailable). Posts will be synced when backend is available.`);
+        }
+      } else {
+        // Backend not available, use localStorage only
+        onSchedule(localPosts);
+        alert(`📝 Scheduled ${localPosts.length} posts locally. Posts will be synced with backend when available.`);
+      }
+      
+      // Close modal and reset form
+      onClose();
+      setSelectedPosts([]);
+      setSelectedPlatforms([]);
+      setRecurring(false);
+      setRecurringEnd('');
+      
+    } catch (error) {
+      console.error('❌ Error scheduling posts:', error);
+      alert(`❌ Error scheduling posts: ${error.message}`);
+    } finally {
+      setIsScheduling(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -82,7 +174,15 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
       <div className="bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-2xl font-bold text-white">📅 Schedule Posts</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-white">📅 Schedule Posts</h2>
+            <div className="flex items-center mt-1">
+              <div className={`w-2 h-2 rounded-full mr-2 ${backendConnected ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+              <span className="text-sm text-gray-400">
+                {backendConnected ? 'Backend Connected' : 'Local Storage Only'}
+              </span>
+            </div>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-white text-2xl font-bold"
@@ -255,9 +355,21 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
           </button>
           <button
             onClick={handleSchedule}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={isScheduling}
+            className={`px-6 py-2 text-white rounded-lg transition-colors ${
+              isScheduling 
+                ? 'bg-gray-600 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
           >
-            📅 Schedule Posts
+            {isScheduling ? (
+              <>
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+                Scheduling...
+              </>
+            ) : (
+              <>📅 Schedule Posts</>
+            )}
           </button>
         </div>
       </div>
