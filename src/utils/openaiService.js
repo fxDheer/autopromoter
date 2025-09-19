@@ -26,7 +26,7 @@ try {
 }
 
 // Initialize Gemini AI as fallback
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAQFJRUnQCnz9ZDHmjSASiBoBSVWhU3EP0');
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
 
 /**
  * Reinitialize OpenAI with a new API key

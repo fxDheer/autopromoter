@@ -14,7 +14,7 @@ Since you already have the authorization code, let's use it directly:
 2. **Click "API Configuration"**
 3. **Go to YouTube tab**
 4. **Make sure your credentials are filled**:
-   - API Key: `AIzaSyB06e-L3DSoXpR-hgkMr2S-YVIinNzU7Hc`
+   - API Key: `your_youtube_api_key_here`
    - Channel ID: `UCJTizV4ZC08VoalBEMf9MIg`
    - Client ID: `36045630857-8ajrvoibjvjn4t6365c9fi3553qvreku.apps.googleusercontent.com`
    - Client Secret: `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`
