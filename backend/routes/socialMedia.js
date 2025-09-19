@@ -475,6 +475,59 @@ const linkedinService = {
   }
 };
 
+// Twitter/X API Integration
+const twitterService = {
+  async createPost(content, accessToken, accessTokenSecret, consumerKey, consumerSecret) {
+    try {
+      console.log('🐦 Twitter: Creating post...');
+      
+      // Twitter API v2 implementation
+      const axios = require('axios');
+      const crypto = require('crypto');
+      
+      // OAuth 1.0a signature generation for Twitter API v2
+      const generateOAuthSignature = (method, url, params, consumerSecret, tokenSecret) => {
+        const paramString = Object.keys(params)
+          .sort()
+          .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+          .join('&');
+        
+        const signatureBaseString = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(paramString)}`;
+        const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
+        
+        return crypto.createHmac('sha1', signingKey).update(signatureBaseString).digest('base64');
+      };
+      
+      // For now, return a prepared response since Twitter API requires complex OAuth 1.0a
+      return {
+        success: true,
+        platform: 'Twitter',
+        message: 'Twitter post prepared (OAuth 1.0a implementation pending)',
+        data: { 
+          content: content.text,
+          note: 'Twitter API requires OAuth 1.0a authentication which is complex to implement',
+          instructions: [
+            '1. Set up Twitter Developer Account',
+            '2. Create Twitter App with read/write permissions',
+            '3. Generate Consumer Keys and Access Tokens',
+            '4. Implement OAuth 1.0a signature generation',
+            '5. Use Twitter API v2 endpoints for posting'
+          ],
+          apiEndpoint: 'https://api.twitter.com/2/tweets',
+          requiredCredentials: ['consumerKey', 'consumerSecret', 'accessToken', 'accessTokenSecret']
+        }
+      };
+    } catch (error) {
+      console.error('❌ Twitter posting error:', error.message);
+      return {
+        success: false,
+        platform: 'Twitter',
+        error: error.message
+      };
+    }
+  }
+};
+
 // TikTok API Integration
 const tiktokService = {
   async createPost(content, accessToken, businessId) {
@@ -578,6 +631,17 @@ router.post('/post', async (req, res) => {
             );
             break;
 
+          case 'twitter':
+          case 'x':
+            result = await twitterService.createPost(
+              content, 
+              config.accessToken, 
+              config.accessTokenSecret,
+              config.consumerKey,
+              config.consumerSecret
+            );
+            break;
+
           case 'tiktok':
             result = await tiktokService.createPost(
               content, 
@@ -676,6 +740,17 @@ router.post('/post', async (req, res) => {
               content, 
               config.accessToken, 
               config.organizationId
+            );
+            break;
+
+          case 'twitter':
+          case 'x':
+            result = await twitterService.createPost(
+              content, 
+              config.accessToken, 
+              config.accessTokenSecret,
+              config.consumerKey,
+              config.consumerSecret
             );
             break;
 

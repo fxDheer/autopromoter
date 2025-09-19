@@ -695,6 +695,13 @@ export const getPlatformRequirements = () => {
       setupUrl: 'https://developer.linkedin.com/docs/share-on-linkedin',
       description: 'LinkedIn Company posting requires organization access and API permissions'
     },
+    twitter: {
+      required: ['accessToken', 'accessTokenSecret', 'consumerKey', 'consumerSecret'],
+      optional: [],
+      permissions: ['tweet.write', 'users.read'],
+      setupUrl: 'https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api',
+      description: 'Twitter API v2 posting requires OAuth 1.0a authentication'
+    },
     tiktok: {
       required: ['accessToken', 'businessId'],
       optional: ['appId', 'appSecret'],

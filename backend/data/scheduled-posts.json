@@ -1,0 +1,54 @@
+[
+  {
+    "id": "scheduled_1758278859553_qw9xjd0ls",
+    "text": "🚀 Testing Auto Promoter's complete social media integration! This automated post demonstrates our professional scheduling and API integration capabilities. #AutoPromoter #SocialMedia #Automation #Testing #API #Integration #Scheduling #Professional #Technology #Innovation",
+    "hashtags": "#AutoPromoter #SocialMedia #Automation #Testing #API #Integration #Scheduling #Professional #Technology #Innovation",
+    "platform": "Instagram",
+    "scheduledTime": "2025-09-19T10:48:39.542Z",
+    "timezone": "UTC",
+    "recurring": {
+      "enabled": false
+    },
+    "apiConfig": {
+      "facebook": {
+        "enabled": false,
+        "accessToken": "your_facebook_access_token",
+        "pageId": "your_facebook_page_id",
+        "appSecret": "your_facebook_app_secret"
+      },
+      "instagram": {
+        "enabled": false,
+        "accessToken": "your_instagram_access_token",
+        "businessAccountId": "your_instagram_business_account_id",
+        "appSecret": "your_instagram_app_secret"
+      },
+      "linkedin": {
+        "enabled": false,
+        "accessToken": "your_linkedin_access_token",
+        "organizationId": "your_linkedin_organization_id"
+      },
+      "twitter": {
+        "enabled": false,
+        "accessToken": "your_twitter_access_token",
+        "accessTokenSecret": "your_twitter_access_token_secret",
+        "consumerKey": "your_twitter_consumer_key",
+        "consumerSecret": "your_twitter_consumer_secret"
+      },
+      "youtube": {
+        "enabled": false,
+        "apiKey": "your_youtube_api_key",
+        "channelId": "your_youtube_channel_id"
+      }
+    },
+    "metadata": {
+      "test": true,
+      "createdBy": "integration-test"
+    },
+    "status": "failed",
+    "createdAt": "2025-09-19T10:47:39.553Z",
+    "updatedAt": "2025-09-19T10:47:39.553Z",
+    "executedAt": "2025-09-19T10:47:41.623Z",
+    "error": "Invalid OAuth access token - Cannot parse access token",
+    "failedAt": "2025-09-19T10:47:42.024Z"
+  }
+]

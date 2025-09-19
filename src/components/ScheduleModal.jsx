@@ -12,7 +12,7 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
   const [isScheduling, setIsScheduling] = useState(false);
   const [backendConnected, setBackendConnected] = useState(false);
 
-  const platforms = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube'];
+  const platforms = ['Instagram', 'Facebook', 'LinkedIn', 'Twitter', 'TikTok', 'YouTube'];
 
   useEffect(() => {
     if (isOpen) {
@@ -83,6 +83,9 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
     setIsScheduling(true);
 
     try {
+      // Get API configuration from localStorage
+      const apiConfig = JSON.parse(localStorage.getItem('apiConfig') || '{}');
+      
       // Create scheduled posts for backend API
       const backendPosts = [];
       
@@ -102,6 +105,7 @@ const ScheduleModal = ({ isOpen, onClose, onSchedule, posts = [] }) => {
               frequency: recurringType,
               endDate: recurringEnd || null
             } : { enabled: false },
+            apiConfig: apiConfig, // Include API configuration for social media posting
             metadata: {
               originalId: originalPost.id,
               business: originalPost.business,

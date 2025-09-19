@@ -50,6 +50,13 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
         clientId: '',
         clientSecret: ''
       },
+      twitter: {
+        enabled: false,
+        accessToken: '',
+        accessTokenSecret: '',
+        consumerKey: '',
+        consumerSecret: ''
+      },
       tiktok: {
         enabled: false,
         accessToken: '',
@@ -133,6 +140,9 @@ const ApiConfigModal = ({ isOpen, onClose, onSave, currentConfig = {} }) => {
   const getDisplayName = (field) => {
     const displayNames = {
       accessToken: 'Access Token',
+      accessTokenSecret: 'Access Token Secret',
+      consumerKey: 'Consumer Key',
+      consumerSecret: 'Consumer Secret',
       pageId: 'Page ID',
       appId: 'App ID',
       appSecret: 'App Secret',
@@ -430,6 +440,7 @@ Authorization code:`);
       facebook: '📘',
       instagram: '📸',
       linkedin: '💼',
+      twitter: '🐦',
       tiktok: '🎵',
       youtube: '📺',
       zapier: '🔗',
@@ -443,6 +454,7 @@ Authorization code:`);
       facebook: 'from-blue-600 to-blue-700',
       instagram: 'from-pink-500 to-purple-600',
       linkedin: 'from-blue-700 to-blue-800',
+      twitter: 'from-blue-400 to-blue-600',
       tiktok: 'from-black to-gray-800',
       youtube: 'from-red-600 to-red-700',
       zapier: 'from-orange-500 to-red-500',
